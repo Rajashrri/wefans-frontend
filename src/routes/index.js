@@ -11,8 +11,6 @@ import Otp from "../pages/Authentication/Otp";
 import ForgotOtp from "../pages/Authentication/ForgotOtp";
 import ResetPwd from "../pages/Authentication/ResetPwd";
 
-
-
 // Dashboard
 import Dashboard from "../pages/Dashboard/index";
 
@@ -102,7 +100,6 @@ import Login1 from "../pages/AuthenticationInner/Login";
 import Register1 from "../pages/AuthenticationInner/Register";
 import ForgetPwd1 from "../pages/AuthenticationInner/ForgetPassword";
 
-
 //Professionallist
 import Professionallist from "../pages/ProfessionalMaster/Professionallist";
 import AddProfessional from "../pages/ProfessionalMaster/AddProfessional";
@@ -116,26 +113,19 @@ import TriviaTypesList from "../pages/TriviaTypes/TriviaTypesList";
 
 import SocialLinkList from "../pages/SocialLink/SocialLinkList";
 
-
 import CelebratyList from "../pages/Celebraty/CelebratyList";
 import AddCelebraty from "../pages/Celebraty/AddCelebraty";
 import UpdateCelebraty from "../pages/Celebraty/UpdateCelebraty";
 
+import AddSection from "../pages/Section/AddMovie";
+import ListMoviev from "../pages/Section/ListMoviev";
+
+import UpdateMoviev from "../pages/Section/UpdateMovie";
 
 import TriviaentriesList from "../pages/Triviaentries/TriviaentriesList";
 
-
 import CreateTriviaentries from "../pages/Triviaentries/add";
 import UpdateTriviaentries from "../pages/Triviaentries/UpdateTriviaentries";
-
-
-
-
-
-
-
-
-
 
 import Testimonialslist from "../pages/Testimonials/Testimonialslist";
 import AddTestimonials from "../pages/Testimonials/AddTestimonials";
@@ -236,27 +226,24 @@ const authProtectedRoutes = [
   { path: "/add-professional", component: <AddProfessional /> },
   { path: "/update-professional/:id", component: <UpdateProfessional /> },
   { path: "/language-master", component: <LanguageList /> },
-    { path: "/triviaTypes-master", component: <TriviaTypesList /> },
-    { path: "/celebrity-list", component: <CelebratyList /> },
+  { path: "/triviaTypes-master", component: <TriviaTypesList /> },
+  { path: "/celebrity-list", component: <CelebratyList /> },
   { path: "/add-celebrity", component: <AddCelebraty /> },
   { path: "/update-celebrity/:id", component: <UpdateCelebraty /> },
 
-
-      { path: "/sociallink-list", component: <SocialLinkList /> },
-
- { path: "/timeline-list", component: <Timelinelist /> },
+  { path: "/add-movie/:id", component: <AddSection /> },
+  { path: "/list-movie/:id", component: <ListMoviev /> },
+  { path: "/update-movie/:id", component: <UpdateMoviev /> },
+  { path: "/sociallink-list", component: <SocialLinkList /> },
+  { path: "/timeline-list", component: <Timelinelist /> },
   { path: "/add-timeline", component: <AddTimeline /> },
   { path: "/update-timeline/:id", component: <UpdateTimeline /> },
-
-
   //employee-list
   { path: "/triviaentries-list", component: <TriviaentriesList /> },
   { path: "/add-triviaentries", component: <CreateTriviaentries /> },
   { path: "/update-triviaentries/:id", component: <UpdateTriviaentries /> },
 
   //Client list
-
-
 
   // Project
   { path: "/testimonial-list", component: <Testimonialslist /> },

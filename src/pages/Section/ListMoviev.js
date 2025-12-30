@@ -9,7 +9,6 @@ import {
   Button,
   Input,
   Modal,
-  ModalHeader,
   ModalBody,
   ModalFooter,
 } from "reactstrap";
@@ -24,24 +23,14 @@ import {
 } from "react-table";
 import PropTypes from "prop-types";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import deleteimg from "../../assets/images/delete.png";
 import { toast } from "react-toastify";
-import {
-  getCelebraties,
-  deleteCelebraty,
-  updateCelebratyStatus,
-  getProfessions
-} from "../../api/celebratyApi";
+import { getMoviesByCelebrity, deleteMoviev } from "../../api/movievApi";
 
-function GlobalFilter({
-  preGlobalFilteredRows,
-  globalFilter,
-  setGlobalFilter,
-}) {
+function GlobalFilter({ preGlobalFilteredRows, globalFilter, setGlobalFilter }) {
   const count = preGlobalFilteredRows.length;
   const [value, setValue] = useState(globalFilter);
-
   const onChange = useAsyncDebounce((value) => {
     setGlobalFilter(value || undefined);
   }, 200);
@@ -72,7 +61,6 @@ const TableContainer = ({
   customPageSize,
   className,
   isGlobalFilter,
-  setModalOpen,
 }) => {
   const {
     getTableProps,
@@ -96,10 +84,7 @@ const TableContainer = ({
       columns,
       data,
       defaultColumn: { Filter },
-      initialState: {
-        pageIndex: 0,
-        pageSize: customPageSize,
-      },
+      initialState: { pageIndex: 0, pageSize: customPageSize },
     },
     useGlobalFilter,
     useFilters,
@@ -133,13 +118,6 @@ const TableContainer = ({
             setGlobalFilter={setGlobalFilter}
           />
         )}
-        <Col md={6}>
-          <div className="d-flex justify-content-end">
-            <Link to="/add-celebrity" className="btn btn-primary">
-              Add
-            </Link>
-          </div>
-        </Col>
       </Row>
 
       <div className="table-responsive react-table">
@@ -234,135 +212,46 @@ TableContainer.propTypes = {
   customPageSize: PropTypes.number,
   className: PropTypes.string,
   isGlobalFilter: PropTypes.bool,
-  setModalOpen: PropTypes.func.isRequired,
 };
 
-const CelebratyList = () => {
+const MovievList = () => {
+ const { id } = useParams();
+const celebrityId = id; // rename for clarity
+
   const [modalOpen2, setModalOpen2] = useState(false);
-  const [allProfessions, setAllProfessions] = useState([]); // ✅ Add this
-
-  const [celebraty, setcelebraty] = useState([
-    {
-      id: 1,
-      createdDate: "2024-06-01",
-      celebratyTitle: "Design Homepage",
-      startDate: "2024-06-02",
-      endDate: "2024-06-05",
-      prostatus: "In Progress",
-      priority: "High",
-      assignedBy: "Manager A",
-      assignedTo: "Designer X",
-      status: "Active",
-    },
-    {
-      id: 2,
-      createdDate: "2024-06-03",
-      celebratyTitle: "Fix Login Bug",
-      startDate: "2024-06-04",
-      endDate: "2024-06-07",
-      prostatus: "Completed",
-      priority: "Medium",
-      assignedBy: "Manager B",
-      assignedTo: "Developer Y",
-      status: "Inactive",
-    },
-    {
-      id: 3,
-      createdDate: "2024-06-05",
-      celebratyTitle: "API Integration",
-      startDate: "2024-06-06",
-      endDate: "2024-06-10",
-      prostatus: "Pending",
-      priority: "High",
-      assignedBy: "Team Lead",
-      assignedTo: "Developer Z",
-      status: "Active",
-    },
-  ]);
-
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalOpen1, setModalOpen1] = useState(false);
-
-  const handleStatusToggle = (id) => {
-    setcelebraty((prevList) =>
-      prevList.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              status: item.status === "Active" ? "Inactive" : "Active",
-            }
-          : item
-      )
-    );
-  };
-
-
- const fetchProfessions = async () => {
-  const data = await getProfessions();
-  setAllProfessions(data);
-};
-  //for datatable
-  const fetchData = async () => {
-    try {
-      const result = await getCelebraties();
-      setcelebraty(result.msg || []);
-    } catch (error) {
-      console.error("Error fetching celebraties:", error);
-      toast.error("Failed to load celebraties.");
-    }
-  };
-
-  //status
-
-  const handleChange = async (currentStatus, id) => {
-    const newStatus = currentStatus == 1 ? 0 : 1;
-
-    try {
-      const res_data = await updateCelebratyStatus(id, newStatus);
-
-      if (res_data.success === false) {
-        toast.error(res_data.msg || "Failed to update status");
-        return;
-      }
-
-      toast.success("Celebraty status updated successfully");
-      fetchData();
-    } catch (error) {
-      console.error("Error updating status:", error);
-      toast.error("Error updating status. Please try again!");
-    }
-  };
-
+  const [movies, setMovies] = useState([]);
   const [deleteId, setDeleteId] = useState(null);
 
-  // 👇 Open modal and set ID
+  const fetchMovies = async () => {
+    try {
+      const result = await getMoviesByCelebrity(celebrityId);
+      setMovies(result.msg || []);
+    } catch (error) {
+      console.error("Error fetching movies:", error);
+      toast.error("Failed to load movies.");
+    }
+  };
+
   const handleDelete = (id) => {
     setDeleteId(id);
     setModalOpen2(true);
   };
 
-  // 👇 Close modal and reset ID
   const handleClose = () => {
     setModalOpen2(false);
     setDeleteId(null);
   };
-  // 👇 Confirm delete function
-  const handleyesno = async () => {
-    if (!deleteId) {
-      toast.error("No ID to delete.");
-      return;
-    }
 
+  const handleConfirmDelete = async () => {
+    if (!deleteId) return;
     try {
-      const result = await deleteCelebraty(deleteId);
-
+      const result = await deleteMoviev(deleteId);
       if (result.status) {
-        toast.success("Celebrity deleted successfully!");
-        setcelebraty((prev) => prev.filter((row) => row._id !== deleteId));
+        toast.success("Movie deleted successfully!");
+        setMovies((prev) => prev.filter((m) => m._id !== deleteId));
         setModalOpen2(false);
-        setDeleteId(null);
       } else {
-        toast.error(result.msg || "Failed to delete celebrity.");
+        toast.error(result.msg || "Failed to delete movie.");
       }
     } catch (error) {
       console.error("Delete error:", error);
@@ -371,134 +260,90 @@ const CelebratyList = () => {
   };
 
   useEffect(() => {
-    fetchData();
-     fetchProfessions();
-  }, []);
+    fetchMovies();
+  }, [celebrityId]);
 
   const columns = useMemo(
     () => [
+      { Header: "No.", accessor: (_row, i) => i + 1 },
+      { Header: "Title", accessor: "title" },
+     
       {
-        Header: "No.",
-        accessor: (_row, i) => i + 1,
-      },
-      { Header: "Created Date", accessor: "createdAt" },
-      { Header: "Celebraty Name", accessor: "name" },
-
-      {
-        Header: "Status",
-        accessor: "status",
-        Cell: ({ row }) => {
-          const isActive = row.original.status == 1;
-
-          return (
-            <div className="form-check form-switch">
-              <input
-                type="checkbox"
-                className="form-check-input"
-                id={`switch-${row.original._id}`}
-                checked={isActive}
-                onChange={() =>
-                  handleChange(row.original.status, row.original._id)
-                }
-              />
-              <label
-                className="form-check-label"
-                htmlFor={`switch-${row.original._id}`}
-              >
-                {isActive ? "Active" : "Inactive"}
-              </label>
-            </div>
-          );
-        },
-      },
-      {
-        Header: "Option",
-        Cell: ({ row }) => {
-          const professionIds = row.original.professions || [];
-        const actorProfession = allProfessions.find(
-          (prof) => prof.name.toLowerCase() === "actor"
-        );
-        const isActor = actorProfession && professionIds.includes(actorProfession._id);
-          return (
-            <div className="d-flex gap-2">
-              <Link
-                to={`/update-celebrity/${row.original._id}`}
-                color="primary"
-                size="sm"
-                className="btn btn-primary"
-              >
-                Edit
-              </Link>
-
-              <Button
-                color="danger"
-                size="sm"
-                onClick={() => handleDelete(row.original._id)}
-              >
-                Delete
-              </Button>
-              {/* Show "Add Movie" button only if profession includes Actor */}
-              {isActor && (
-                <Link
-                  to={`/list-movie/${row.original._id}`}
-                  color="success"
-                  size="sm"
-                  className="btn btn-success"
-                >
-                  Add Movie
-                </Link>
-              )}
-            </div>
-          );
-        },
+        Header: "Options",
+        Cell: ({ row }) => (
+          <div className="d-flex gap-2">
+            <Link
+              to={`/update-movie/${row.original._id}`}
+              className="btn btn-primary btn-sm"
+            >
+              Edit
+            </Link>
+            <Button
+              color="danger"
+              size="sm"
+              onClick={() => handleDelete(row.original._id)}
+            >
+              Delete
+            </Button>
+          </div>
+        ),
       },
     ],
-    [celebraty,allProfessions]
+    [movies]
   );
 
   const breadcrumbItems = [
     { title: "Dashboard", link: "/" },
-    { title: "Celebraty", link: "#" },
+    { title: "Movies", link: "#" },
   ];
 
   return (
     <Fragment>
       <div className="page-content">
         <Container fluid>
-          <Breadcrumbs title="Celebraty" breadcrumbItems={breadcrumbItems} />
+          <Breadcrumbs title="Movies" breadcrumbItems={breadcrumbItems} />
           <Card>
             <CardBody>
+              <div className="d-flex justify-content-between mb-3">
+                <h4 className="mb-0">Movies List</h4>
+                <Link
+                  to={`/add-movie/${id}`}
+                  className="btn btn-primary"
+                >
+                  + Add Movie
+                </Link>
+              </div>
+
               <TableContainer
                 columns={columns}
-                data={celebraty}
+                data={movies}
                 customPageSize={10}
                 isGlobalFilter={true}
-                setModalOpen={setModalOpen}
               />
             </CardBody>
           </Card>
         </Container>
-        {/*  Modal for Delete Confirmation */}
-        <Modal isOpen={modalOpen2} toggle={() => setModalOpen1(!modalOpen2)}>
-          {/* <ModalHeader className="position-absolute right-0 top-0 w-100 z-1" toggle={() => setModalOpen2(!modalOpen2)}></ModalHeader> */}
+
+        {/* Delete Confirmation Modal */}
+        <Modal isOpen={modalOpen2} toggle={handleClose}>
           <ModalBody className="mt-3">
             <h4 className="p-3 text-center">
-              Do you really want to <br /> delete the file?
+              Do you really want to delete this movie?
             </h4>
             <div className="d-flex justify-content-center">
               <img
                 src={deleteimg}
-                alt="Privilege Icon"
+                alt="Delete Icon"
                 width={"70%"}
                 className="mb-3 m-auto"
               />
             </div>
           </ModalBody>
           <ModalFooter>
-            <Button color="danger" onClick={handleyesno}>
+            <Button color="danger" onClick={handleConfirmDelete}>
               Delete
             </Button>
-            <Button color="secondary" onClick={() => handleClose()}>
+            <Button color="secondary" onClick={handleClose}>
               Cancel
             </Button>
           </ModalFooter>
@@ -508,4 +353,4 @@ const CelebratyList = () => {
   );
 };
 
-export default CelebratyList;
+export default MovievList;

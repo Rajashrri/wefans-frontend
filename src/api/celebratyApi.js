@@ -24,7 +24,19 @@ export const getProfessionsOptions = async () => {
   if (!response.ok) throw new Error("Failed to fetch profession options");
   return response.json();
 };
-
+export const getProfessions = async () => {
+  try {
+    const res = await fetch(`${BASE_URL}/api/celebraty/professions`);
+    if (!res.ok) {
+      throw new Error("Failed to fetch professions");
+    }
+    const data = await res.json();
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching professions:", error);
+    return [];
+  }
+};
 // ✅ Add new celebrity
 export const addCelebraty = async (formData) => {
   const response = await fetch(`${BASE_URL}/api/celebraty/addcelebraty`, {
