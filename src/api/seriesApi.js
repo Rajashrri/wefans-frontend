@@ -7,7 +7,7 @@ const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 // ✅ Fetch all language options (for dropdown)
 export const getLanguageOptions = async () => {
-  const response = await fetch(`${BASE_URL}/api/Moviev/languageOptions`, {
+  const response = await fetch(`${BASE_URL}/api/series/languageOptions`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
@@ -17,15 +17,15 @@ export const getLanguageOptions = async () => {
 
 // ✅ Fetch all profession options (for dropdown)
 export const getProfessionsOptions = async () => {
-  const response = await fetch(`${BASE_URL}/api/Moviev/professionsOptions`, {
+  const response = await fetch(`${BASE_URL}/api/series/professionsOptions`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
   if (!response.ok) throw new Error("Failed to fetch profession options");
   return response.json();
 };
-export const addMoviev = async (formData) => {
-  const response = await fetch(`${BASE_URL}/api/moviev/addMoviev`, {
+export const addSeries = async (formData) => {
+  const response = await fetch(`${BASE_URL}/api/series/addSeries`, {
     method: "POST",
     body: formData,
   });
@@ -33,34 +33,34 @@ export const addMoviev = async (formData) => {
 };
 
 // ✅ Get celebrity by ID (for edit view)
-export const getMoviesByCelebrity = async (id) => {
-  const response = await fetch(`${BASE_URL}/api/Moviev/getMoviesByCelebrity/${id}`);
-  if (!response.ok) throw new Error("Failed to fetch Moviev by ID");
+export const getSeriesByCelebrity = async (id) => {
+  const response = await fetch(`${BASE_URL}/api/series/getSeriesByCelebrity/${id}`);
+  if (!response.ok) throw new Error("Failed to fetch Series by ID");
   return response.json();
 };
 
 
 
-export const deleteMoviev = async (id) => {
+export const deleteSeries = async (id) => {
   const response = await fetch(
-    `${process.env.REACT_APP_API_BASE_URL}/moviev/${id}`,
+    `${BASE_URL}/api/series/deleteseries/${id}`,
     { method: "DELETE" }
   );
   return await response.json();
 };
 
 // ✅ Get celebrity by ID (for edit view)
-export const getMovievById = async (id) => {
-  const response = await fetch(`${BASE_URL}/api/Moviev/getMovievByid/${id}`);
-  if (!response.ok) throw new Error("Failed to fetch Moviev by ID");
+export const getSeriesById = async (id) => {
+  const response = await fetch(`${BASE_URL}/api/series/getSeriesByid/${id}`);
+  if (!response.ok) throw new Error("Failed to fetch Series by ID");
   return response.json();
 };
 
 // ✅ Update celebrity
-export const updateMoviev = async (id, formData) => {
+export const updateSeries = async (id, formData) => {
   try {
     const response = await fetch(
-      `${process.env.REACT_APP_API_BASE_URL}/api/Moviev/updateMoviev/${id}`,
+      `${process.env.REACT_APP_API_BASE_URL}/api/series/updateSeries/${id}`,
       {
         method: "PATCH",
         body: formData, // send raw FormData
@@ -68,15 +68,15 @@ export const updateMoviev = async (id, formData) => {
     );
     return await response.json();
   } catch (error) {
-    console.error("Update Moviev API Error:", error);
+    console.error("Update series API Error:", error);
     return { status: false, msg: "Network error" };
   }
 };
 
 
 
-export const updateMovieStatus = async (id, status) => {
-  const response = await fetch(`${BASE_URL}/api/Moviev/update-statusMoviev`, {
+export const updateSeriesStatus = async (id, status) => {
+  const response = await fetch(`${BASE_URL}/api/series/update-statusSeries`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id, status }),
@@ -85,7 +85,7 @@ export const updateMovieStatus = async (id, status) => {
 };
 // ✅ Fetch all social link options (for dropdown)
 export const getSocialLinksOptions = async () => {
-  const response = await fetch(`${BASE_URL}/api/Moviev/sociallist`, {
+  const response = await fetch(`${BASE_URL}/api/series/sociallist`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });

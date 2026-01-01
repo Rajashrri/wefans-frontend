@@ -31,7 +31,7 @@ import {
   getCelebraties,
   deleteCelebraty,
   updateCelebratyStatus,
-  getProfessions
+  getProfessions,
 } from "../../api/celebratyApi";
 
 function GlobalFilter({
@@ -296,11 +296,10 @@ const CelebratyList = () => {
     );
   };
 
-
- const fetchProfessions = async () => {
-  const data = await getProfessions();
-  setAllProfessions(data);
-};
+  const fetchProfessions = async () => {
+    const data = await getProfessions();
+    setAllProfessions(data);
+  };
   //for datatable
   const fetchData = async () => {
     try {
@@ -372,7 +371,7 @@ const CelebratyList = () => {
 
   useEffect(() => {
     fetchData();
-     fetchProfessions();
+    fetchProfessions();
   }, []);
 
   const columns = useMemo(
@@ -415,17 +414,28 @@ const CelebratyList = () => {
         Header: "Option",
         Cell: ({ row }) => {
           const professionIds = row.original.professions || [];
-        const actorProfession = allProfessions.find(
-          (prof) => prof.name.toLowerCase() === "actor"
-        );
-        const isActor = actorProfession && professionIds.includes(actorProfession._id);
+
+          // Find profession objects for "Actor" and "Politician"
+          const actorProfession = allProfessions.find(
+            (prof) => prof.name.toLowerCase() === "actor"
+          );
+          const politicianProfession = allProfessions.find(
+            (prof) => prof.name.toLowerCase() === "politician"
+          );
+
+          // Check if celebrity has those professions
+          const isActor =
+            actorProfession && professionIds.includes(actorProfession._id);
+          const isPolitician =
+            politicianProfession &&
+            professionIds.includes(politicianProfession._id);
+
           return (
-            <div className="d-flex gap-2">
+            <div className="d-flex gap-2 flex-wrap">
+              {/* Common Buttons */}
               <Link
                 to={`/update-celebrity/${row.original._id}`}
-                color="primary"
-                size="sm"
-                className="btn btn-primary"
+                className="btn btn-primary btn-sm"
               >
                 Edit
               </Link>
@@ -437,23 +447,50 @@ const CelebratyList = () => {
               >
                 Delete
               </Button>
-              {/* Show "Add Movie" button only if profession includes Actor */}
+
+              {/* Actor Buttons */}
               {isActor && (
-                <Link
-                  to={`/list-movie/${row.original._id}`}
-                  color="success"
-                  size="sm"
-                  className="btn btn-success"
-                >
-                  Add Movie
-                </Link>
+                <>
+                  <Link
+                    to={`/list-movie/${row.original._id}`}
+                    className="btn btn-success btn-sm"
+                  >
+                    Add Movie
+                  </Link>
+
+                  <Link
+                    to={`/list-series/${row.original._id}`}
+                    className="btn btn-warning btn-sm"
+                  >
+                    Add TV/Web Series
+                  </Link>
+                </>
+              )}
+
+              {/* Politician Buttons */}
+              {isPolitician && (
+                <>
+                  <Link
+                    to={`/list-election/${row.original._id}`}
+                    className="btn btn-info btn-sm"
+                  >
+                    Add Election
+                  </Link>
+
+                  <Link
+                    to={`/list-positions/${row.original._id}`}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    Positions Held
+                  </Link>
+                </>
               )}
             </div>
           );
         },
       },
     ],
-    [celebraty,allProfessions]
+    [celebraty, allProfessions]
   );
 
   const breadcrumbItems = [

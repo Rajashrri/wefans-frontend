@@ -122,6 +122,21 @@ import ListMoviev from "../pages/Section/ListMoviev";
 
 import UpdateMoviev from "../pages/Section/UpdateMovie";
 
+import AddSeries from "../pages/Section/AddSeries";
+import ListSeries from "../pages/Section/ListSeries";
+
+import UpdateSeries from "../pages/Section/UpdateSeries";
+
+import AddElection from "../pages/Section/AddElection";
+import ListElection from "../pages/Section/ListElection";
+
+import UpdateElection from "../pages/Section/UpdateElection";
+
+import AddPositions from "../pages/Section/AddPositions";
+import ListPositions from "../pages/Section/ListPositions";
+
+import UpdatePositions from "../pages/Section/UpdatePositions";
+
 import TriviaentriesList from "../pages/Triviaentries/TriviaentriesList";
 
 import CreateTriviaentries from "../pages/Triviaentries/add";
@@ -234,6 +249,20 @@ const authProtectedRoutes = [
   { path: "/add-movie/:id", component: <AddSection /> },
   { path: "/list-movie/:id", component: <ListMoviev /> },
   { path: "/update-movie/:id", component: <UpdateMoviev /> },
+
+  { path: "/add-series/:id", component: <AddSeries /> },
+  { path: "/list-series/:id", component: <ListSeries /> },
+  { path: "/update-series/:id", component: <UpdateSeries /> },
+
+
+    { path: "/add-election/:id", component: <AddElection /> },
+  { path: "/list-election/:id", component: <ListElection /> },
+  { path: "/update-election/:id", component: <UpdateElection /> },
+
+    { path: "/add-positions/:id", component: <AddPositions /> },
+  { path: "/list-positions/:id", component: <ListPositions /> },
+  { path: "/update-positions/:id", component: <UpdatePositions /> },
+
   { path: "/sociallink-list", component: <SocialLinkList /> },
   { path: "/timeline-list", component: <Timelinelist /> },
   { path: "/add-timeline", component: <AddTimeline /> },

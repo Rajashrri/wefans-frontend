@@ -7,7 +7,7 @@ const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 // ✅ Fetch all language options (for dropdown)
 export const getLanguageOptions = async () => {
-  const response = await fetch(`${BASE_URL}/api/Moviev/languageOptions`, {
+  const response = await fetch(`${BASE_URL}/api/positions/languageOptions`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
@@ -17,15 +17,15 @@ export const getLanguageOptions = async () => {
 
 // ✅ Fetch all profession options (for dropdown)
 export const getProfessionsOptions = async () => {
-  const response = await fetch(`${BASE_URL}/api/Moviev/professionsOptions`, {
+  const response = await fetch(`${BASE_URL}/api/positions/professionsOptions`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
   if (!response.ok) throw new Error("Failed to fetch profession options");
   return response.json();
 };
-export const addMoviev = async (formData) => {
-  const response = await fetch(`${BASE_URL}/api/moviev/addMoviev`, {
+export const addPositions = async (formData) => {
+  const response = await fetch(`${BASE_URL}/api/positions/addPositions`, {
     method: "POST",
     body: formData,
   });
@@ -33,34 +33,34 @@ export const addMoviev = async (formData) => {
 };
 
 // ✅ Get celebrity by ID (for edit view)
-export const getMoviesByCelebrity = async (id) => {
-  const response = await fetch(`${BASE_URL}/api/Moviev/getMoviesByCelebrity/${id}`);
-  if (!response.ok) throw new Error("Failed to fetch Moviev by ID");
+export const getPositionsByCelebrity = async (id) => {
+  const response = await fetch(`${BASE_URL}/api/positions/getPositionsByCelebrity/${id}`);
+  if (!response.ok) throw new Error("Failed to fetch positions by ID");
   return response.json();
 };
 
 
 
-export const deleteMoviev = async (id) => {
+export const deletePositions = async (id) => {
   const response = await fetch(
-    `${process.env.REACT_APP_API_BASE_URL}/moviev/${id}`,
+    `${BASE_URL}/api/positions/deletepositions/${id}`,
     { method: "DELETE" }
   );
   return await response.json();
 };
 
 // ✅ Get celebrity by ID (for edit view)
-export const getMovievById = async (id) => {
-  const response = await fetch(`${BASE_URL}/api/Moviev/getMovievByid/${id}`);
-  if (!response.ok) throw new Error("Failed to fetch Moviev by ID");
+export const getPositionsById = async (id) => {
+  const response = await fetch(`${BASE_URL}/api/positions/getPositionsByid/${id}`);
+  if (!response.ok) throw new Error("Failed to fetch Positions by ID");
   return response.json();
 };
 
 // ✅ Update celebrity
-export const updateMoviev = async (id, formData) => {
+export const updatePositions = async (id, formData) => {
   try {
     const response = await fetch(
-      `${process.env.REACT_APP_API_BASE_URL}/api/Moviev/updateMoviev/${id}`,
+      `${process.env.REACT_APP_API_BASE_URL}/api/positions/updatePositions/${id}`,
       {
         method: "PATCH",
         body: formData, // send raw FormData
@@ -68,15 +68,15 @@ export const updateMoviev = async (id, formData) => {
     );
     return await response.json();
   } catch (error) {
-    console.error("Update Moviev API Error:", error);
+    console.error("Update positions API Error:", error);
     return { status: false, msg: "Network error" };
   }
 };
 
 
 
-export const updateMovieStatus = async (id, status) => {
-  const response = await fetch(`${BASE_URL}/api/Moviev/update-statusMoviev`, {
+export const updatePositionsStatus = async (id, status) => {
+  const response = await fetch(`${BASE_URL}/api/positions/update-statusPositions`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id, status }),
@@ -85,7 +85,7 @@ export const updateMovieStatus = async (id, status) => {
 };
 // ✅ Fetch all social link options (for dropdown)
 export const getSocialLinksOptions = async () => {
-  const response = await fetch(`${BASE_URL}/api/Moviev/sociallist`, {
+  const response = await fetch(`${BASE_URL}/api/positions/sociallist`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });

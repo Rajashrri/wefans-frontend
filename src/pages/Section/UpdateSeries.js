@@ -14,38 +14,37 @@ import Select from "react-select";
 import { toast } from "react-toastify";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  getMovievById,
-  updateMoviev,
+  getSeriesById,
+  updateSeries,
   getLanguageOptions,
-} from "../../api/movievApi";
+} from "../../api/seriesApi";
 
-const UpdateMoviev = () => {
+const UpdateSeries = () => {
   const [breadcrumbItems] = useState([
     { title: "Dashboard", link: "#" },
-    { title: "Update Moviev", link: "#" },
+    { title: "Update Series", link: "#" },
   ]);
 
   const navigate = useNavigate();
-  const { id } = useParams(); // movie ID
+  const { id } = useParams(); // Series ID
 
   const [formData, setFormData] = useState({
     title: "",
-    release_year: "",
-    release_date: "",
+    type: "",
+    start_year: "",
     role: "",
     role_type: "",
     languages: [],
     director: "",
-    producer: "",
-    cast: "",
+    end_year: "",
     notes: "",
-    rating: "",
-    platform_rating: "",
-    old_image: "", // for preview
-    watchLinks: [], // ✅ Added
-    awards: "",
-    sort: "",
+    watchLinks: [],
+    platform: "",
     statusnew: "",
+    statusseries: "",
+    sort: "",
+    old_image: "", // for preview
+    seasons: [], // ✅ new field
   });
 
   const [selectedFile, setSelectedFile] = useState(null);
@@ -53,10 +52,10 @@ const UpdateMoviev = () => {
   const [languagesOptions, setLanguageOptions] = useState([]);
   const [celebrityId, setCelebrityId] = useState("");
 
-  // Fetch languages & movie data
+  // Fetch languages & Series data
   useEffect(() => {
     fetchLanguageOptions();
-    fetchMovievById();
+    fetchSeriesById();
   }, [id]);
 
   const fetchLanguageOptions = async () => {
@@ -72,38 +71,60 @@ const UpdateMoviev = () => {
     }
   };
 
-  const fetchMovievById = async () => {
+  const fetchSeriesById = async () => {
     try {
-      const res = await getMovievById(id);
+      const res = await getSeriesById(id);
       if (res.msg) {
         const data = res.msg;
         setFormData({
           title: data.title || "",
-          release_year: data.release_year || "",
-          release_date: data.release_date || "",
+          type: data.type || "",
+          start_year: data.start_year || "",
           role: data.role || "",
           role_type: data.role_type || "",
           languages: data.languages || [],
           director: data.director || "",
-          producer: data.producer || "",
-          cast: data.cast || "",
+          end_year: data.end_year || "",
+          statusseries: data.statusseries || "",
           notes: data.notes || "",
-          rating: data.rating || "",
-          awards: data.awards || "",
+          platform: data.platform || "",
           sort: data.sort || "",
           statusnew: data.statusnew || "",
-          platform_rating: data.platform_rating || "",
           watchLinks: data.watchLinks || [], // ✅ load watchLinks
+          seasons: data.seasons || [], // ✅ load watchLinks
           old_image: data.image || "",
         });
         setCelebrityId(data.celebrityId);
       } else {
-        toast.error("Movie not found");
+        toast.error("Series not found");
       }
     } catch (err) {
-      console.error("Fetch Moviev Error:", err);
-      toast.error("Failed to fetch movie data");
+      console.error("Fetch Series Error:", err);
+      toast.error("Failed to fetch Series data");
     }
+  };
+  /// ✅ SEASONS handlers
+  const handleAddSeason = () => {
+    setFormData((prev) => ({
+      ...prev,
+      seasons: [
+        ...prev.seasons,
+        { season_no: "", episodes: "", year: "", watch_link: "" },
+      ],
+    }));
+  };
+
+  const handleRemoveSeason = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      seasons: prev.seasons.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleSeasonChange = (index, field, value) => {
+    const updated = [...formData.seasons];
+    updated[index][field] = value;
+    setFormData((prev) => ({ ...prev, seasons: updated }));
   };
 
   const handleInput = (e) => {
@@ -139,8 +160,7 @@ const UpdateMoviev = () => {
     e.preventDefault();
     const newErrors = {};
     if (!formData.title) newErrors.title = "Title is required";
-    if (!formData.release_year)
-      newErrors.release_year = "Release year is required";
+    if (!formData.type) newErrors.type = "type is required";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -152,7 +172,9 @@ const UpdateMoviev = () => {
 
       Object.keys(formData).forEach((key) => {
         // ✅ Skip arrays — we'll handle them separately
-        if (!["old_image", "watchLinks", "languages"].includes(key)) {
+        if (
+          !["old_image", "watchLinks", "languages", "seasons"].includes(key)
+        ) {
           formDataToSend.append(key, formData[key]);
         }
       });
@@ -160,6 +182,7 @@ const UpdateMoviev = () => {
       // ✅ Properly stringify arrays
       formDataToSend.append("languages", JSON.stringify(formData.languages));
       formDataToSend.append("watchLinks", JSON.stringify(formData.watchLinks));
+      formDataToSend.append("seasons", JSON.stringify(formData.seasons));
 
       if (selectedFile) formDataToSend.append("image", selectedFile);
 
@@ -171,25 +194,25 @@ const UpdateMoviev = () => {
         console.log(pair[0] + ": ", pair[1]);
       }
 
-      const result = await updateMoviev(id, formDataToSend);
+      const result = await updateSeries(id, formDataToSend);
 
       if (!result.status) {
-        toast.error(result.msg || "Failed to update movie.");
+        toast.error(result.msg || "Failed to update Series.");
         return;
       }
 
-      toast.success("Movie updated successfully!");
-      navigate(`/list-movie/${celebrityId}`);
+      toast.success("Series updated successfully!");
+      navigate(`/list-series/${celebrityId}`);
     } catch (err) {
-      console.error("Update Movie Error:", err);
-      toast.error("Something went wrong while updating the movie.");
+      console.error("Update Series Error:", err);
+      toast.error("Something went wrong while updating the Series.");
     }
   };
 
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="UPDATE Moviev" breadcrumbItems={breadcrumbItems} />
+        <Breadcrumbs title="UPDATE Series" breadcrumbItems={breadcrumbItems} />
         <Row>
           <Col xl="12">
             <Card>
@@ -210,37 +233,74 @@ const UpdateMoviev = () => {
                       )}
                     </Col>
                     <Col md="6">
-                      <Label>Release Year</Label>
+                      <Label>Series Type</Label>
                       <Input
-                        name="release_year"
-                        value={formData.release_year}
+                        type="select"
+                        name="type"
                         onChange={handleInput}
-                        placeholder="Release Year"
-                        type="number"
-                      />
-                      {errors.release_year && (
-                        <span className="text-danger">
-                          {errors.release_year}
-                        </span>
+                        value={formData.type}
+                      >
+                        <option value="">Select</option>
+                        <option value="TV Series">TV Series </option>
+                        <option value="Web Series">Web Series </option>
+                      </Input>
+                      {errors.type && (
+                        <span className="text-danger">{errors.type}</span>
                       )}
                     </Col>
                     <Col md="6">
-                      <Label>Release Date</Label>
+                      <Label>Platform / Channel</Label>
                       <Input
-                        name="release_date"
-                        value={formData.release_date}
+                        name="platform"
+                        value={formData.platform}
                         onChange={handleInput}
-                        placeholder="Release Date"
-                        type="date"
+                        placeholder="Platform / Channel"
+                        type="text"
+                      />
+                    </Col>
+
+                    <Col md="6">
+                      <Label>Start Year </Label>
+                      <Input
+                        name="start_year"
+                        value={formData.start_year}
+                        onChange={handleInput}
+                        placeholder="Start Year"
+                        type="number"
                       />
                     </Col>
                     <Col md="6">
-                      <Label>Role / Character Name</Label>
+                      <Label>End Year </Label>
+                      <Input
+                        name="end_year"
+                        value={formData.end_year}
+                        onChange={handleInput}
+                        placeholder="End Year"
+                        type="number"
+                      />
+                    </Col>
+
+                    <Col md="6">
+                      <Label>Status </Label>
+                      <Input
+                        type="select"
+                        name="statusseries"
+                        onChange={handleInput}
+                        value={formData.statusseries}
+                      >
+                        <option value="">Select</option>
+                        <option value="Ongoing">Ongoing </option>
+                        <option value="Ended">Ended </option>
+                        <option value="Mini-series">Mini-series </option>
+                      </Input>
+                    </Col>
+                    <Col md="6">
+                      <Label>Role / Character Name </Label>
                       <Input
                         name="role"
                         value={formData.role}
                         onChange={handleInput}
-                        placeholder="Role / Character Name"
+                        placeholder="Role / Character Name "
                         type="text"
                       />
                     </Col>
@@ -249,23 +309,22 @@ const UpdateMoviev = () => {
                       <Input
                         type="select"
                         name="role_type"
-                        value={formData.role_type}
                         onChange={handleInput}
+                        value={formData.role_type}
                       >
                         <option value="">Select</option>
-                        <option value="Lead">Lead</option>
-                        <option value="Supporting">Supporting</option>
-                        <option value="Cameo">Cameo</option>
-                        <option value="Special Appearance">
-                          Special Appearance
-                        </option>
-                        <option value="Voice">Voice</option>
+                        <option value="Lead">Lead </option>
+                        <option value="Supporting">Supporting </option>
+                        <option value="Cameo">Cameo </option>
+
+                        <option value="Voice">Voice </option>
                       </Input>
                     </Col>
                     <Col md="6">
                       <Label>Languages</Label>
                       <Select
                         isMulti
+                        name="languages"
                         options={languagesOptions}
                         value={languagesOptions.filter((opt) =>
                           formData.languages.includes(opt.value)
@@ -278,34 +337,18 @@ const UpdateMoviev = () => {
                         }
                         placeholder="Choose..."
                       />
+                      {errors.languages && (
+                        <span className="text-danger">{errors.languages}</span>
+                      )}
                     </Col>
+
                     <Col md="6">
-                      <Label>Director</Label>
+                      <Label>Director </Label>
                       <Input
                         name="director"
                         value={formData.director}
                         onChange={handleInput}
-                        placeholder="Director"
-                        type="text"
-                      />
-                    </Col>
-                    <Col md="6">
-                      <Label>Producer</Label>
-                      <Input
-                        name="producer"
-                        value={formData.producer}
-                        onChange={handleInput}
-                        placeholder="Producer / Production House"
-                        type="text"
-                      />
-                    </Col>
-                    <Col md="6">
-                      <Label>Cast</Label>
-                      <Input
-                        name="cast"
-                        value={formData.cast}
-                        onChange={handleInput}
-                        placeholder="Cast"
+                        placeholder="Director "
                         type="text"
                       />
                     </Col>
@@ -319,55 +362,32 @@ const UpdateMoviev = () => {
                         placeholder="Synopsis / Notes"
                       />
                     </Col>
+
                     <Col md="6">
-                      <Label>Poster / Thumbnail</Label>
-                      <Input
-                        type="file"
-                        name="image"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                      />
-                      {formData.old_image && (
-                        <div className="mt-2">
-                          <img
-                            src={`${process.env.REACT_APP_API_BASE_URL}/moviev/${formData.old_image}`}
-                            alt="Poster"
-                            width="100"
-                            className="rounded border"
-                          />
-                        </div>
-                      )}
+                      <div className="mb-3">
+                        <Label className="form-label">
+                          {" "}
+                          Poster / Thumbnail
+                        </Label>
+                        <Input
+                          type="file"
+                          name="image"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                        />
+                        {formData.old_image && (
+                          <div className="mt-2">
+                            <img
+                              src={`${process.env.REACT_APP_API_BASE_URL}/series/${formData.old_image}`}
+                              alt="Main"
+                              width="100"
+                              className="rounded border"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </Col>
-                    <Col md="6">
-                      <Label>IMDB Rating</Label>
-                      <Input
-                        name="rating"
-                        value={formData.rating}
-                        onChange={handleInput}
-                        placeholder="IMDB Rating"
-                        type="number"
-                      />
-                    </Col>
-                    <Col md="6">
-                      <Label>Your Platform Rating</Label>
-                      <Input
-                        name="platform_rating"
-                        value={formData.platform_rating}
-                        onChange={handleInput}
-                        placeholder="Platform Rating"
-                        type="number"
-                      />
-                    </Col>
-                    <Col md="6">
-                      <Label>Awards / Nominations (for this movie) </Label>
-                      <Input
-                        name="awards"
-                        value={formData.awards}
-                        onChange={handleInput}
-                        placeholder="Awards / Nominations (for this movie) "
-                        type="text"
-                      />
-                    </Col>
+
                     <Col md="6">
                       <Label>Sort Order </Label>
                       <Input
@@ -392,15 +412,18 @@ const UpdateMoviev = () => {
                         <option value="Published">Published </option>
                       </Input>
                     </Col>
-                    {/* ✅ Watch Links Section */}
+
+                    {/* ✅ WATCH LINKS SECTION */}
                     <Col md="12" className="mt-4">
                       <h5>Watch Links</h5>
                       {formData.watchLinks.map((link, index) => (
                         <Row key={index} className="align-items-center mb-2">
                           <Col md="3">
-                            <Label>Platform</Label>
+                            <Label>Platform Name</Label>
                             <Input
+                              type="text"
                               value={link.platform}
+                              placeholder="e.g. Netflix"
                               onChange={(e) =>
                                 handleWatchLinkChange(
                                   index,
@@ -408,7 +431,6 @@ const UpdateMoviev = () => {
                                   e.target.value
                                 )
                               }
-                              placeholder="Netflix"
                             />
                           </Col>
                           <Col md="5">
@@ -416,6 +438,7 @@ const UpdateMoviev = () => {
                             <Input
                               type="url"
                               value={link.url}
+                              placeholder="https://..."
                               onChange={(e) =>
                                 handleWatchLinkChange(
                                   index,
@@ -423,11 +446,10 @@ const UpdateMoviev = () => {
                                   e.target.value
                                 )
                               }
-                              placeholder="https://..."
                             />
                           </Col>
                           <Col md="3">
-                            <Label>Type</Label>
+                            <Label>Link Type</Label>
                             <Input
                               type="select"
                               value={link.type}
@@ -442,14 +464,13 @@ const UpdateMoviev = () => {
                               <option value="">Select</option>
                               <option value="OTT">OTT</option>
                               <option value="Trailer">Trailer</option>
-                              <option value="Song">Song</option>
                               <option value="Clip">Clip</option>
                             </Input>
                           </Col>
                           <Col md="1" className="d-flex align-items-end">
                             <Button
-                              color="danger"
                               type="button"
+                              color="danger"
                               onClick={() => handleRemoveWatchLink(index)}
                             >
                               ×
@@ -460,20 +481,99 @@ const UpdateMoviev = () => {
                       <Button
                         type="button"
                         color="secondary"
+                        className="mt-2"
                         onClick={handleAddWatchLink}
                       >
                         + Add Watch Link
                       </Button>
                     </Col>
+
+                    {/* ✅ SEASONS */}
+                    <Col md="12" className="mt-4">
+                      <h5>Seasons</h5>
+                      {formData.seasons.map((season, index) => (
+                        <Row key={index} className="align-items-center mb-3">
+                          <Col md="2">
+                            <Label>Season No</Label>
+                            <Input
+                              type="number"
+                              value={season.season_no}
+                              onChange={(e) =>
+                                handleSeasonChange(
+                                  index,
+                                  "season_no",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </Col>
+                          <Col md="3">
+                            <Label>Episodes</Label>
+                            <Input
+                              type="number"
+                              value={season.episodes}
+                              onChange={(e) =>
+                                handleSeasonChange(
+                                  index,
+                                  "episodes",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </Col>
+                          <Col md="3">
+                            <Label>Year</Label>
+                            <Input
+                              type="number"
+                              value={season.year}
+                              onChange={(e) =>
+                                handleSeasonChange(
+                                  index,
+                                  "year",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </Col>
+                          <Col md="3">
+                            <Label>Watch Link (optional)</Label>
+                            <Input
+                              type="url"
+                              value={season.watch_link}
+                              onChange={(e) =>
+                                handleSeasonChange(
+                                  index,
+                                  "watch_link",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </Col>
+                          <Col md="1" className="d-flex align-items-end">
+                            <Button
+                              type="button"
+                              color="danger"
+                              onClick={() => handleRemoveSeason(index)}
+                            >
+                              ×
+                            </Button>
+                          </Col>
+                        </Row>
+                      ))}
+                      <Button color="secondary" onClick={handleAddSeason}>
+                        + Add Season
+                      </Button>
+                    </Col>
                   </Row>
+
                   <div className="d-flex gap-2 mt-3">
                     <Button type="submit" color="primary">
-                      Update Moviev
+                      Update Series
                     </Button>
                     <Button
                       type="button"
                       color="secondary"
-                      onClick={() => navigate(`/list-movie/${celebrityId}`)}
+                      onClick={() => navigate(`/list-series/${celebrityId}`)}
                     >
                       ← Back
                     </Button>
@@ -488,4 +588,4 @@ const UpdateMoviev = () => {
   );
 };
 
-export default UpdateMoviev;
+export default UpdateSeries;

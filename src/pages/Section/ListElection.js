@@ -27,10 +27,10 @@ import { Link, useParams } from "react-router-dom";
 import deleteimg from "../../assets/images/delete.png";
 import { toast } from "react-toastify";
 import {
-  getMoviesByCelebrity,
-  deleteMoviev,
-  updateMovieStatus,
-} from "../../api/movievApi";
+  getElectionByCelebrity,
+  deleteElection,
+  updateElectionStatus,
+} from "../../api/electionApi";
 import { getCelebratyById } from "../../api/celebratyApi";
 import { useNavigate } from "react-router-dom";
 
@@ -224,23 +224,22 @@ TableContainer.propTypes = {
   isGlobalFilter: PropTypes.bool,
 };
 
-const MovievList = () => {
+const ElectionList = () => {
   const { id } = useParams();
   const celebrityId = id; // rename for clarity
 
   const [modalOpen2, setModalOpen2] = useState(false);
-  const [movies, setMovies] = useState([]);
+  const [election, setElection] = useState([]);
   const [deleteId, setDeleteId] = useState(null);
   const [celebrityName, setCelebrityName] = useState("");
   const navigate = useNavigate();
-
-  const fetchMovies = async () => {
+  const fetchElection = async () => {
     try {
-      const result = await getMoviesByCelebrity(celebrityId);
-      setMovies(result.msg || []);
+      const result = await getElectionByCelebrity(celebrityId);
+      setElection(result.msg || []);
     } catch (error) {
-      console.error("Error fetching movies:", error);
-      toast.error("Failed to load movies.");
+      console.error("Error fetching Election:", error);
+      toast.error("Failed to load Election.");
     }
   };
 
@@ -253,19 +252,21 @@ const MovievList = () => {
     setModalOpen2(false);
     setDeleteId(null);
   };
+  //status
+
   const handleChange = async (currentStatus, id) => {
     const newStatus = currentStatus == 1 ? 0 : 1;
 
     try {
-      const res_data = await updateMovieStatus(id, newStatus);
+      const res_data = await updateElectionStatus(id, newStatus);
 
       if (res_data.success === false) {
         toast.error(res_data.msg || "Failed to update status");
         return;
       }
 
-      toast.success("Movie status updated successfully");
-      fetchMovies();
+      toast.success("Election status updated successfully");
+      fetchElection();
     } catch (error) {
       console.error("Error updating status:", error);
       toast.error("Error updating status. Please try again!");
@@ -274,13 +275,13 @@ const MovievList = () => {
   const handleConfirmDelete = async () => {
     if (!deleteId) return;
     try {
-      const result = await deleteMoviev(deleteId);
+      const result = await deleteElection(deleteId);
       if (result.status) {
-        toast.success("Movie deleted successfully!");
-        setMovies((prev) => prev.filter((m) => m._id !== deleteId));
+        toast.success("Election deleted successfully!");
+        setElection((prev) => prev.filter((m) => m._id !== deleteId));
         setModalOpen2(false);
       } else {
-        toast.error(result.msg || "Failed to delete movie.");
+        toast.error(result.msg || "Failed to delete Election.");
       }
     } catch (error) {
       console.error("Delete error:", error);
@@ -299,16 +300,16 @@ const MovievList = () => {
       console.error("Error fetching celebrity:", err);
     }
   };
-
   useEffect(() => {
-    fetchMovies();
+    fetchElection();
     fetchCelebrityName();
   }, [celebrityId]);
 
   const columns = useMemo(
     () => [
       { Header: "No.", accessor: (_row, i) => i + 1 },
-      { Header: "Title", accessor: "title" },
+      { Header: "Election Year", accessor: "election_year" },
+      { Header: "Election Type", accessor: "type" },
       {
         Header: "Status",
         accessor: "status",
@@ -341,7 +342,7 @@ const MovievList = () => {
         Cell: ({ row }) => (
           <div className="d-flex gap-2">
             <Link
-              to={`/update-movie/${row.original._id}`}
+              to={`/update-election/${row.original._id}`}
               className="btn btn-primary btn-sm"
             >
               Edit
@@ -357,45 +358,45 @@ const MovievList = () => {
         ),
       },
     ],
-    [movies]
+    [election]
   );
 
   const breadcrumbItems = [
     { title: "Dashboard", link: "/" },
-    { title: "Movies", link: "#" },
+    { title: "Election", link: "#" },
   ];
 
   return (
     <Fragment>
       <div className="page-content">
         <Container fluid>
-          <Breadcrumbs title="Movies" breadcrumbItems={breadcrumbItems} />
+          <Breadcrumbs title="Election" breadcrumbItems={breadcrumbItems} />
           <Card>
             <CardBody>
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h4 className="mb-0">
-                  Movies List{" "}
-                  {celebrityName && (
-                    <span className="text-muted">— {celebrityName}</span>
-                  )}
-                </h4>
-
-                <div className="d-flex gap-2">
-                  <Link to={`/add-movie/${id}`} className="btn btn-primary">
-                    + Add Movie
-                  </Link>
-                  <Button
-                    color="secondary"
-                    onClick={() => navigate("/celebrity-list")}
-                  >
-                    ← Back
-                  </Button>
-                </div>
-              </div>
+             <div className="d-flex justify-content-between align-items-center mb-3">
+                           <h4 className="mb-0">
+                             Election List{" "}
+                             {celebrityName && (
+                               <span className="text-muted">— {celebrityName}</span>
+                             )}
+                           </h4>
+           
+                           <div className="d-flex gap-2">
+                             <Link to={`/add-election/${id}`} className="btn btn-primary">
+                               + Add Election
+                             </Link>
+                             <Button
+                               color="secondary"
+                               onClick={() => navigate("/celebrity-list")}
+                             >
+                               ← Back
+                             </Button>
+                           </div>
+                         </div>
 
               <TableContainer
                 columns={columns}
-                data={movies}
+                data={election}
                 customPageSize={10}
                 isGlobalFilter={true}
               />
@@ -407,7 +408,7 @@ const MovievList = () => {
         <Modal isOpen={modalOpen2} toggle={handleClose}>
           <ModalBody className="mt-3">
             <h4 className="p-3 text-center">
-              Do you really want to delete this movie?
+              Do you really want to delete this Election?
             </h4>
             <div className="d-flex justify-content-center">
               <img
@@ -432,4 +433,4 @@ const MovievList = () => {
   );
 };
 
-export default MovievList;
+export default ElectionList;

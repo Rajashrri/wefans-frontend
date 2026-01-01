@@ -14,16 +14,16 @@ import "flatpickr/dist/themes/material_blue.css";
 import Flatpickr from "react-flatpickr";
 import Select from "react-select";
 import { toast } from "react-toastify";
-import { getLanguageOptions, addMoviev } from "../../api/movievApi";
+import { getLanguageOptions, addSeries } from "../../api/seriesApi";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
 import { useDropzone } from "react-dropzone";
 
-const AddMoviev = () => {
+const AddSeries = () => {
   const [breadcrumbItems] = useState([
     { title: "Dashboard", link: "#" },
-    { title: "Add Moviev", link: "#" },
+    { title: "Add Series", link: "#" },
   ]);
   const navigate = useNavigate();
 
@@ -32,21 +32,21 @@ const AddMoviev = () => {
 
   const [formData, setFormData] = useState({
     title: "",
-    release_year: "",
-    release_date: "",
+    type: "",
+    platform: "",
+    start_year: "",
+    end_year: "",
+    statusseries: "",
+    languages: [],
     role: "",
     role_type: "",
-    languages: [],
     director: "",
-    producer: "",
-    cast: "",
     notes: "",
-    rating: "",
-    platform_rating: "",
+
     image: "",
     watchLinks: [], // ✅ NEW
+    seasons: [], // ✅ new field
 
-    awards: "",
     sort: "",
     statusnew: "",
   });
@@ -106,14 +106,36 @@ const AddMoviev = () => {
     updated[index][field] = value;
     setFormData((prev) => ({ ...prev, watchLinks: updated }));
   };
+  // ✅ Handle Seasons repeater
+  const handleAddSeason = () => {
+    setFormData((prev) => ({
+      ...prev,
+      seasons: [
+        ...(prev.seasons || []),
+        { season_no: "", episodes: "", year: "", watch_link: "" },
+      ],
+    }));
+  };
+
+  const handleRemoveSeason = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      seasons: prev.seasons.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleSeasonChange = (index, field, value) => {
+    const updated = [...formData.seasons];
+    updated[index][field] = value;
+    setFormData((prev) => ({ ...prev, seasons: updated }));
+  };
 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
 
     const newErrors = {};
     if (!formData.title) newErrors.title = "Title is required";
-    if (!formData.release_year)
-      newErrors.release_year = "Release year is required";
+    if (!formData.type) newErrors.type = "Type is required";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -125,21 +147,20 @@ const AddMoviev = () => {
 
       // Append all form fields
       formDataToSend.append("title", formData.title);
-      formDataToSend.append("release_year", formData.release_year);
-      formDataToSend.append("release_date", formData.release_date);
+      formDataToSend.append("type", formData.type);
+      formDataToSend.append("start_year", formData.start_year);
       formDataToSend.append("role", formData.role);
       formDataToSend.append("role_type", formData.role_type);
       formDataToSend.append("languages", JSON.stringify(formData.languages));
       formDataToSend.append("watchLinks", JSON.stringify(formData.watchLinks));
+      formDataToSend.append("seasons", JSON.stringify(formData.seasons));
 
       formDataToSend.append("director", formData.director);
-      formDataToSend.append("producer", formData.producer);
-      formDataToSend.append("cast", formData.cast);
+      formDataToSend.append("end_year", formData.end_year);
+      formDataToSend.append("platform", formData.platform);
       formDataToSend.append("notes", formData.notes);
-      formDataToSend.append("rating", formData.rating);
-      formDataToSend.append("platform_rating", formData.platform_rating);
+      formDataToSend.append("statusseries", formData.statusseries);
       formDataToSend.append("celebrityId", celebrityId);
-      formDataToSend.append("awards", formData.awards);
       formDataToSend.append("sort", formData.sort);
       formDataToSend.append("statusnew", formData.statusnew);
       if (selectedFile) {
@@ -150,45 +171,46 @@ const AddMoviev = () => {
       formDataToSend.append("createdBy", adminid);
 
       // Call backend API
-      const result = await addMoviev(formDataToSend);
+      const result = await addSeries(formDataToSend);
 
       if (!result.status) {
-        toast.error(result.msg || "Failed to add movie.");
+        toast.error(result.msg || "Failed to add Series.");
         return;
       }
 
-      toast.success("Movie added successfully!");
-      navigate(`/list-movie/${celebrityId}`);
+      toast.success("Series added successfully!");
+      navigate(`/list-series/${celebrityId}`);
 
       // Reset form
       setFormData({
         title: "",
-        release_year: "",
-        release_date: "",
+        type: "",
+        start_year: "",
         role: "",
         role_type: "",
         languages: [],
         director: "",
-        producer: "",
-        cast: "",
+        end_year: "",
         notes: "",
-        rating: "",
-        platform_rating: "",
         image: "",
         watchLinks: [],
+        platform: "",
+        statusnew: "",
+        statusseries: "",
+        sort: "",
       });
       setSelectedFile(null);
       setErrors({});
     } catch (err) {
-      console.error("Add Movie Error:", err);
-      toast.error("Something went wrong while adding the movie.");
+      console.error("Add Series Error:", err);
+      toast.error("Something went wrong while adding the Series.");
     }
   };
 
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="ADD Movie" breadcrumbItems={breadcrumbItems} />
+        <Breadcrumbs title="ADD Series" breadcrumbItems={breadcrumbItems} />
         <Row>
           <Col xl="12">
             <Card>
@@ -209,29 +231,66 @@ const AddMoviev = () => {
                       )}
                     </Col>
                     <Col md="6">
-                      <Label>Release Year</Label>
+                      <Label>Series Type</Label>
                       <Input
-                        name="release_year"
-                        value={formData.release_year}
+                        type="select"
+                        name="type"
                         onChange={handleInput}
-                        placeholder="Release Year"
-                        type="number"
-                      />
-                      {errors.release_year && (
-                        <span className="text-danger">
-                          {errors.release_year}
-                        </span>
+                        value={formData.type}
+                      >
+                        <option value="">Select</option>
+                        <option value="TV Series">TV Series </option>
+                        <option value="Web Series">Web Series </option>
+                      </Input>
+                      {errors.type && (
+                        <span className="text-danger">{errors.type}</span>
                       )}
                     </Col>
                     <Col md="6">
-                      <Label>Release Date</Label>
+                      <Label>Platform / Channel</Label>
                       <Input
-                        name="release_date"
-                        value={formData.release_date}
+                        name="platform"
+                        value={formData.platform}
                         onChange={handleInput}
-                        placeholder="Release Date"
-                        type="date"
+                        placeholder="Platform / Channel"
+                        type="text"
                       />
+                    </Col>
+
+                    <Col md="6">
+                      <Label>Start Year </Label>
+                      <Input
+                        name="start_year"
+                        value={formData.start_year}
+                        onChange={handleInput}
+                        placeholder="Start Year"
+                        type="number"
+                      />
+                    </Col>
+                    <Col md="6">
+                      <Label>End Year </Label>
+                      <Input
+                        name="end_year"
+                        value={formData.end_year}
+                        onChange={handleInput}
+                        placeholder="End Year"
+                        type="number"
+                      />
+                    </Col>
+
+                    <Col md="6">
+                      <Label>Status </Label>
+                      <Input
+                        type="select"
+                        name="statusseries"
+                        onChange={handleInput}
+                        value={formData.statusseries}
+                      >
+                        <option value="">Select</option>
+                        <option value="Ongoing">Ongoing </option>
+                        <option value="Ended">Ended </option>
+                        <option value="Mini-series">Mini-series </option>
+                      </Input>
                     </Col>
                     <Col md="6">
                       <Label>Role / Character Name </Label>
@@ -255,9 +314,7 @@ const AddMoviev = () => {
                         <option value="Lead">Lead </option>
                         <option value="Supporting">Supporting </option>
                         <option value="Cameo">Cameo </option>
-                        <option value="Special Appearance">
-                          Special Appearance{" "}
-                        </option>
+
                         <option value="Voice">Voice </option>
                       </Input>
                     </Col>
@@ -282,6 +339,7 @@ const AddMoviev = () => {
                         <span className="text-danger">{errors.languages}</span>
                       )}
                     </Col>
+
                     <Col md="6">
                       <Label>Director </Label>
                       <Input
@@ -289,27 +347,6 @@ const AddMoviev = () => {
                         value={formData.director}
                         onChange={handleInput}
                         placeholder="Director "
-                        type="text"
-                      />
-                    </Col>
-                    <Col md="6">
-                      <Label>Producer / Production House </Label>
-                      <Input
-                        name="producer"
-                        value={formData.producer}
-                        onChange={handleInput}
-                        placeholder="Producer / Production House "
-                        type="text"
-                      />
-                    </Col>
-
-                    <Col md="6">
-                      <Label>Cast (Key Co-stars) </Label>
-                      <Input
-                        name="cast"
-                        value={formData.cast}
-                        onChange={handleInput}
-                        placeholder="Cast (Key Co-stars)"
                         type="text"
                       />
                     </Col>
@@ -323,6 +360,7 @@ const AddMoviev = () => {
                         placeholder="Synopsis / Notes"
                       />
                     </Col>
+
                     <Col md="6">
                       <div className="mb-3">
                         <Label className="form-label">
@@ -349,36 +387,6 @@ const AddMoviev = () => {
                     </Col>
 
                     <Col md="6">
-                      <Label>IMDB Rating</Label>
-                      <Input
-                        name="rating"
-                        value={formData.rating}
-                        onChange={handleInput}
-                        placeholder="IMDB Rating"
-                        type="number"
-                      />
-                    </Col>
-                    <Col md="6">
-                      <Label>Your Platform Rating</Label>
-                      <Input
-                        name="platform_rating"
-                        value={formData.platform_rating}
-                        onChange={handleInput}
-                        placeholder="Your Platform Rating"
-                        type="number"
-                      />
-                    </Col>
-                    <Col md="6">
-                      <Label>Awards / Nominations (for this movie) </Label>
-                      <Input
-                        name="awards"
-                        value={formData.awards}
-                        onChange={handleInput}
-                        placeholder="Awards / Nominations (for this movie) "
-                        type="text"
-                      />
-                    </Col>
-                    <Col md="6">
                       <Label>Sort Order </Label>
                       <Input
                         name="sort"
@@ -402,6 +410,7 @@ const AddMoviev = () => {
                         <option value="Published">Published </option>
                       </Input>
                     </Col>
+
                     {/* ✅ WATCH LINKS SECTION */}
                     <Col md="12" className="mt-4">
                       <h5>Watch Links</h5>
@@ -453,7 +462,6 @@ const AddMoviev = () => {
                               <option value="">Select</option>
                               <option value="OTT">OTT</option>
                               <option value="Trailer">Trailer</option>
-                              <option value="Song">Song</option>
                               <option value="Clip">Clip</option>
                             </Input>
                           </Col>
@@ -477,16 +485,103 @@ const AddMoviev = () => {
                         + Add Watch Link
                       </Button>
                     </Col>
+
+                    {/* ✅ SEASONS SECTION */}
+                    <Col md="12" className="mt-4">
+                      <h5>Seasons</h5>
+                      {formData.seasons?.map((season, index) => (
+                        <Row key={index} className="align-items-center mb-3">
+                          <Col md="2">
+                            <Label>Season No</Label>
+                            <Input
+                              type="number"
+                              value={season.season_no}
+                              placeholder="1"
+                              onChange={(e) =>
+                                handleSeasonChange(
+                                  index,
+                                  "season_no",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </Col>
+                          <Col md="3">
+                            <Label>Episodes</Label>
+                            <Input
+                              type="number"
+                              value={season.episodes}
+                              placeholder="10"
+                              onChange={(e) =>
+                                handleSeasonChange(
+                                  index,
+                                  "episodes",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </Col>
+                          <Col md="3">
+                            <Label>Year</Label>
+                            <Input
+                              type="number"
+                              value={season.year}
+                              placeholder="2024"
+                              onChange={(e) =>
+                                handleSeasonChange(
+                                  index,
+                                  "year",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </Col>
+                          <Col md="3">
+                            <Label>Watch Link (optional)</Label>
+                            <Input
+                              type="url"
+                              value={season.watch_link}
+                              placeholder="https://..."
+                              onChange={(e) =>
+                                handleSeasonChange(
+                                  index,
+                                  "watch_link",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </Col>
+                          <Col md="1" className="d-flex align-items-end">
+                            <Button
+                              type="button"
+                              color="danger"
+                              onClick={() => handleRemoveSeason(index)}
+                            >
+                              ×
+                            </Button>
+                          </Col>
+                        </Row>
+                      ))}
+
+                      <Button
+                        type="button"
+                        color="secondary"
+                        className="mt-2"
+                        onClick={handleAddSeason}
+                      >
+                        + Add Season
+                      </Button>
+                    </Col>
                   </Row>
 
                   <div className="d-flex gap-2 mt-3">
                     <Button type="submit" color="primary">
-                      Add Moviev
+                      Add Series
                     </Button>
                     <Button
                       type="button"
                       color="secondary"
-                      onClick={() => navigate(`/list-movie/${celebrityId}`)}
+                      onClick={() => navigate(`/list-series/${celebrityId}`)}
                     >
                       ← Back
                     </Button>
@@ -501,4 +596,4 @@ const AddMoviev = () => {
   );
 };
 
-export default AddMoviev;
+export default AddSeries;

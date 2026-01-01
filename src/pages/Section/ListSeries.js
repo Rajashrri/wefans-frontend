@@ -27,10 +27,10 @@ import { Link, useParams } from "react-router-dom";
 import deleteimg from "../../assets/images/delete.png";
 import { toast } from "react-toastify";
 import {
-  getMoviesByCelebrity,
-  deleteMoviev,
-  updateMovieStatus,
-} from "../../api/movievApi";
+  getSeriesByCelebrity,
+  deleteSeries,
+  updateSeriesStatus,
+} from "../../api/seriesApi";
 import { getCelebratyById } from "../../api/celebratyApi";
 import { useNavigate } from "react-router-dom";
 
@@ -224,23 +224,22 @@ TableContainer.propTypes = {
   isGlobalFilter: PropTypes.bool,
 };
 
-const MovievList = () => {
+const SeriesList = () => {
   const { id } = useParams();
   const celebrityId = id; // rename for clarity
 
   const [modalOpen2, setModalOpen2] = useState(false);
-  const [movies, setMovies] = useState([]);
+  const [series, setSeries] = useState([]);
   const [deleteId, setDeleteId] = useState(null);
   const [celebrityName, setCelebrityName] = useState("");
   const navigate = useNavigate();
-
-  const fetchMovies = async () => {
+  const fetchSeries = async () => {
     try {
-      const result = await getMoviesByCelebrity(celebrityId);
-      setMovies(result.msg || []);
+      const result = await getSeriesByCelebrity(celebrityId);
+      setSeries(result.msg || []);
     } catch (error) {
-      console.error("Error fetching movies:", error);
-      toast.error("Failed to load movies.");
+      console.error("Error fetching Series:", error);
+      toast.error("Failed to load Series.");
     }
   };
 
@@ -253,19 +252,21 @@ const MovievList = () => {
     setModalOpen2(false);
     setDeleteId(null);
   };
+  //status
+
   const handleChange = async (currentStatus, id) => {
     const newStatus = currentStatus == 1 ? 0 : 1;
 
     try {
-      const res_data = await updateMovieStatus(id, newStatus);
+      const res_data = await updateSeriesStatus(id, newStatus);
 
       if (res_data.success === false) {
         toast.error(res_data.msg || "Failed to update status");
         return;
       }
 
-      toast.success("Movie status updated successfully");
-      fetchMovies();
+      toast.success("Series status updated successfully");
+      fetchSeries();
     } catch (error) {
       console.error("Error updating status:", error);
       toast.error("Error updating status. Please try again!");
@@ -274,13 +275,13 @@ const MovievList = () => {
   const handleConfirmDelete = async () => {
     if (!deleteId) return;
     try {
-      const result = await deleteMoviev(deleteId);
+      const result = await deleteSeries(deleteId);
       if (result.status) {
-        toast.success("Movie deleted successfully!");
-        setMovies((prev) => prev.filter((m) => m._id !== deleteId));
+        toast.success("Series deleted successfully!");
+        setSeries((prev) => prev.filter((m) => m._id !== deleteId));
         setModalOpen2(false);
       } else {
-        toast.error(result.msg || "Failed to delete movie.");
+        toast.error(result.msg || "Failed to delete Series.");
       }
     } catch (error) {
       console.error("Delete error:", error);
@@ -299,9 +300,8 @@ const MovievList = () => {
       console.error("Error fetching celebrity:", err);
     }
   };
-
   useEffect(() => {
-    fetchMovies();
+    fetchSeries();
     fetchCelebrityName();
   }, [celebrityId]);
 
@@ -341,7 +341,7 @@ const MovievList = () => {
         Cell: ({ row }) => (
           <div className="d-flex gap-2">
             <Link
-              to={`/update-movie/${row.original._id}`}
+              to={`/update-series/${row.original._id}`}
               className="btn btn-primary btn-sm"
             >
               Edit
@@ -357,45 +357,45 @@ const MovievList = () => {
         ),
       },
     ],
-    [movies]
+    [series]
   );
 
   const breadcrumbItems = [
     { title: "Dashboard", link: "/" },
-    { title: "Movies", link: "#" },
+    { title: "Series", link: "#" },
   ];
 
   return (
     <Fragment>
       <div className="page-content">
         <Container fluid>
-          <Breadcrumbs title="Movies" breadcrumbItems={breadcrumbItems} />
+          <Breadcrumbs title="Series" breadcrumbItems={breadcrumbItems} />
           <Card>
             <CardBody>
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h4 className="mb-0">
-                  Movies List{" "}
-                  {celebrityName && (
-                    <span className="text-muted">— {celebrityName}</span>
-                  )}
-                </h4>
-
-                <div className="d-flex gap-2">
-                  <Link to={`/add-movie/${id}`} className="btn btn-primary">
-                    + Add Movie
-                  </Link>
-                  <Button
-                    color="secondary"
-                    onClick={() => navigate("/celebrity-list")}
-                  >
-                    ← Back
-                  </Button>
-                </div>
-              </div>
+             <div className="d-flex justify-content-between align-items-center mb-3">
+                           <h4 className="mb-0">
+                             Series List{" "}
+                             {celebrityName && (
+                               <span className="text-muted">— {celebrityName}</span>
+                             )}
+                           </h4>
+           
+                           <div className="d-flex gap-2">
+                             <Link to={`/add-series/${id}`} className="btn btn-primary">
+                               + Add Series
+                             </Link>
+                             <Button
+                               color="secondary"
+                               onClick={() => navigate("/celebrity-list")}
+                             >
+                               ← Back
+                             </Button>
+                           </div>
+                         </div>
 
               <TableContainer
                 columns={columns}
-                data={movies}
+                data={series}
                 customPageSize={10}
                 isGlobalFilter={true}
               />
@@ -407,7 +407,7 @@ const MovievList = () => {
         <Modal isOpen={modalOpen2} toggle={handleClose}>
           <ModalBody className="mt-3">
             <h4 className="p-3 text-center">
-              Do you really want to delete this movie?
+              Do you really want to delete this Series?
             </h4>
             <div className="d-flex justify-content-center">
               <img
@@ -432,4 +432,4 @@ const MovievList = () => {
   );
 };
 
-export default MovievList;
+export default SeriesList;
