@@ -374,7 +374,7 @@ const SectionMasterList = () => {
 
   const breadcrumbItems = [
     { title: "Dashboard", link: "/" },
-    { title: "PProfession Master", link: "#" },
+    { title: "Section Type Master", link: "#" },
   ];
 
   return (

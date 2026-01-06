@@ -24,8 +24,8 @@ const Addsectionmaster = () => {
 
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
-const [fields, setFields] = useState([
-    { title: "", type: "" }, // Default first field
+  const [fields, setFields] = useState([
+    { title: "", type: "", isRequired: false, options: [""] }, // Default first field
   ]);
   const breadcrumbItems = [
     { title: "Dashboard", link: "#" },
@@ -44,23 +44,52 @@ const [fields, setFields] = useState([
     setSectionMaster({ ...sectionmaster, [name]: value });
   };
 
-  
-   // ✅ Handle Checkbox Change
+  // ✅ Handle Checkbox Change
   const handleCheckboxChange = (e) => {
     const { checked } = e.target;
     setSectionMaster((prev) => ({ ...prev, isRepeater: checked }));
   };
-
- // 🧩 Handle Dynamic Fields
+  // ✅ Handle Field Change (Title, Type, Required)
   const handleFieldChange = (index, e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     const updatedFields = [...fields];
-    updatedFields[index][name] = value;
+    updatedFields[index][name] = type === "checkbox" ? checked : value;
+
+    // If user changes type, reset options for non-select types
+    if (name === "type" && value !== "Single Select") {
+      updatedFields[index].options = [""];
+    }
+
     setFields(updatedFields);
   };
 
+  // ✅ Handle Option Change
+  const handleOptionChange = (fieldIndex, optionIndex, value) => {
+    const updatedFields = [...fields];
+    updatedFields[fieldIndex].options[optionIndex] = value;
+    setFields(updatedFields);
+  };
+
+  // ✅ Add More Option
+  const addMoreOption = (fieldIndex) => {
+    const updatedFields = [...fields];
+    updatedFields[fieldIndex].options.push("");
+    setFields(updatedFields);
+  };
+
+  // ✅ Remove Option
+  const removeOption = (fieldIndex, optionIndex) => {
+    const updatedFields = [...fields];
+    updatedFields[fieldIndex].options.splice(optionIndex, 1);
+    setFields(updatedFields);
+  };
+
+  // ✅ Add New Field
   const addMoreField = () => {
-    setFields([...fields, { title: "", type: "" }]);
+    setFields([
+      ...fields,
+      { title: "", type: "", isRequired: false, options: [""] },
+    ]);
   };
 
   const removeField = (index) => {
@@ -88,10 +117,10 @@ const [fields, setFields] = useState([
       formData.append("name", sectionmaster.name);
       formData.append("slug", sectionmaster.slug);
       formData.append("layout", sectionmaster.layout);
-   formData.append("is_repeater", sectionmaster.isRepeater ? "1" : "0");
+      formData.append("is_repeater", sectionmaster.isRepeater ? "1" : "0");
 
       formData.append("createdBy", adminid);
- formData.append("fieldsConfig", JSON.stringify(fields));
+      formData.append("fieldsConfig", JSON.stringify(fields));
       const res_data = await addsectionmaster(formData);
       console.log("API Response:", res_data);
 
@@ -172,7 +201,7 @@ const [fields, setFields] = useState([
                       )}
                     </Col>
 
-                     {/* ✅ Is Repeater Checkbox */}
+                    {/* ✅ Is Repeater Checkbox */}
                     <Col md="6" className="d-flex align-items-center mt-4">
                       <div>
                         <Label check>
@@ -190,56 +219,129 @@ const [fields, setFields] = useState([
                       </div>
                     </Col>
                   </Row>
-  {/* 🧩 Fields Configuration Section */}
+                  {/* 🧩 Fields Configuration Section */}
                   <hr />
                   <h5 className="mt-3 mb-2">Fields Configuration</h5>
 
                   {fields.map((field, index) => (
-                    <Row key={index} className="align-items-center mb-2">
-                      <Col md="5">
-                        <Label>Title</Label>
-                        <Input
-                          name="title"
-                          type="text"
-                          placeholder="Enter field title"
-                          value={field.title}
-                          onChange={(e) => handleFieldChange(index, e)}
-                        />
-                      </Col>
+                    <div key={index} className="border p-3 mb-3 rounded">
+                      <Row className="align-items-center">
+                        <Col md="4">
+                          <Label>Title</Label>
+                          <Input
+                            name="title"
+                            type="text"
+                            placeholder="Enter field title"
+                            value={field.title}
+                            onChange={(e) => handleFieldChange(index, e)}
+                          />
+                        </Col>
 
-                      <Col md="5">
-                        <Label>Field Type</Label>
-                        <Input
-                          type="select"
-                          name="type"
-                          value={field.type}
-                          onChange={(e) => handleFieldChange(index, e)}
-                        >
-                          <option value="">Select Type</option>
-                          <option value="text_short">Text (Short)</option>
-                          <option value="text_long">Text (Long)</option>
-                          <option value="rich_text">Rich Text</option>
-                          <option value="number">Number</option>
-                          <option value="date">Date</option>
-                          <option value="url">URL (with Label)</option>
-                          <option value="media">Media (Image/Video)</option>
-                        </Input>
-                      </Col>
-
-                      <Col md="2" className="mt-4">
-                        {index > 0 && (
-                          <Button
-                            color="danger"
-                            type="button"
-                            onClick={() => removeField(index)}
+                        <Col md="4">
+                          <Label>Field Type</Label>
+                          <Input
+                            type="select"
+                            name="type"
+                            value={field.type}
+                            onChange={(e) => handleFieldChange(index, e)}
                           >
-                            Remove
+                            <option value="">Select Type</option>
+                            <option value="text_short">Text (Short)</option>
+                            <option value="text_long">Text (Long)</option>
+                            <option value="rich_text">Rich Text</option>
+                            <option value="number">Number</option>
+                            <option value="date">Date</option>
+                            <option value="url">URL (with Label)</option>
+                            <option value="media">Media (Image/Video)</option>
+                            <option value="Single Select">Single Select</option>
+                            <option value="Multiple Select">
+                              Multiple Select
+                            </option>
+                          </Input>
+                        </Col>
+
+                        <Col md="2" className="mt-4">
+                          <Label check>
+                            <Input
+                              type="checkbox"
+                              name="isRequired"
+                              checked={field.isRequired}
+                              onChange={(e) => handleFieldChange(index, e)}
+                            />{" "}
+                            Required
+                          </Label>
+                        </Col>
+
+                        <Col md="2" className="mt-4">
+                          {index > 0 && (
+                            <Button
+                              color="danger"
+                              type="button"
+                              onClick={() => removeField(index)}
+                            >
+                              Remove
+                            </Button>
+                          )}
+                        </Col>
+                      </Row>
+
+                      {/* ✅ Options Section (only for select types) */}
+                      {(field.type === "Single Select" ||
+                        field.type === "Multiple Select") && (
+                        <div className="mt-3">
+                          <h6>
+                            {field.type === "Single Select"
+                              ? "Single Select Options"
+                              : "Multiple Select Options"}
+                          </h6>
+                          {field.options.map((opt, optIndex) => (
+                            <Row
+                              key={optIndex}
+                              className="align-items-center mb-2"
+                            >
+                              <Col md="8">
+                                <Input
+                                  type="text"
+                                  placeholder={`Option ${optIndex + 1}`}
+                                  value={opt}
+                                  onChange={(e) =>
+                                    handleOptionChange(
+                                      index,
+                                      optIndex,
+                                      e.target.value
+                                    )
+                                  }
+                                />
+                              </Col>
+                              <Col md="4">
+                                {optIndex > 0 && (
+                                  <Button
+                                    color="danger"
+                                    type="button"
+                                    onClick={() =>
+                                      removeOption(index, optIndex)
+                                    }
+                                  >
+                                    Remove
+                                  </Button>
+                                )}
+                              </Col>
+                            </Row>
+                          ))}
+
+                          <Button
+                            color="secondary"
+                            type="button"
+                            onClick={() => addMoreOption(index)}
+                          >
+                            + Add More Option
                           </Button>
-                        )}
-                      </Col>
-                    </Row>
+                        </div>
+                      )}
+                    </div>
                   ))}
-                    <Button
+
+                  <Button
                     color="secondary"
                     type="button"
                     onClick={addMoreField}
@@ -247,7 +349,8 @@ const [fields, setFields] = useState([
                   >
                     + Add More Field
                   </Button>
-                  <br></br>
+
+                  <br />
                   <Button color="primary" type="submit" className="mt-3">
                     Add
                   </Button>
