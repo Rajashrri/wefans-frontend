@@ -1,0 +1,291 @@
+import React, { useState, useEffect } from "react";
+import {
+  Row,
+  Col,
+  Card,
+  CardBody,
+  Label,
+  Input,
+  Button,
+  Container,
+} from "reactstrap";
+import Breadcrumbs from "../../components/Common/Breadcrumb";
+import { toast } from "react-toastify";
+import { useParams, useNavigate } from "react-router-dom";
+import { getsectionmasterById, updatesectionmaster } from "../../api/sectionmasterApi";
+
+const Updatesectionmaster = () => {
+  const [sectionmaster, setSectionMaster] = useState({
+     name: "",
+    slug: "",
+    layout: "",
+        isRepeater: false, // ✅ added new field
+
+  });
+  const navigate = useNavigate();
+ const [fields, setFields] = useState([{ title: "", type: "" }]);
+  const [errors, setErrors] = useState({});
+  const { id } = useParams();
+
+  const breadcrumbItems = [
+    { title: "Dashboard", link: "#" },
+    { title: "Update Section Types Master", link: "#" },
+  ];
+ // Generate year options (1980 - current year + 5)
+  const currentYear = new Date().getFullYear();
+  const yearOptions = [];
+  for (let y = 1980; y <= currentYear + 5; y++) {
+    yearOptions.push(y);
+  }
+  // Fetch SectionMaster data
+  useEffect(() => {
+    const fetchsectionmaster = async () => {
+      try {
+        const res_data = await getsectionmasterById(id);
+
+        if (res_data.msg) {
+          const data = res_data.msg;
+          setSectionMaster({
+            name: data.name || "",
+            slug: data.slug || "",
+            layout: data.layout || "",
+             isRepeater: data.isRepeater || false, // ✅ load from DB
+          });
+           if (data.fieldsConfig && data.fieldsConfig.length > 0) {
+            setFields(data.fieldsConfig);
+          }
+        } else {
+          toast.error("sectionmaster not found");
+        }
+      } catch (error) {
+        console.error("Fetch sectionmaster error:", error);
+        toast.error("Failed to fetch sectionmaster data");
+      }
+    };
+
+    fetchsectionmaster();
+  }, [id]);
+
+  // Input handler
+  const handleInput = (e) => {
+    setSectionMaster({ ...sectionmaster, [e.target.name]: e.target.value });
+  };
+   // ✅ Checkbox handler
+  const handleCheckboxChange = (e) => {
+    const { checked } = e.target;
+    setSectionMaster((prev) => ({ ...prev, isRepeater: checked }));
+  };
+ // 🧩 Dynamic Fields Configuration
+  const handleFieldChange = (index, e) => {
+    const { name, value } = e.target;
+    const updatedFields = [...fields];
+    updatedFields[index][name] = value;
+    setFields(updatedFields);
+  };
+
+  const addMoreField = () => {
+    setFields([...fields, { title: "", type: "" }]);
+  };
+
+  const removeField = (index) => {
+    const updatedFields = fields.filter((_, i) => i !== index);
+    setFields(updatedFields);
+  };
+
+  // ✅ Submit update
+  const handleUpdateSubmit = async (e) => {
+    e.preventDefault();
+    const newErrors = {};
+
+  if (!sectionmaster.name) newErrors.name = "Name is required";
+    if (!sectionmaster.slug) newErrors.slug = "Slug is required";
+    if (!sectionmaster.layout) newErrors.layout = "Layout is required";
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    try {
+      const adminid = localStorage.getItem("adminid");
+      const formData = new FormData();
+ formData.append("name", sectionmaster.name);
+      formData.append("slug", sectionmaster.slug);
+      formData.append("layout", sectionmaster.layout);
+
+      // ✅ Include checkbox value as "1" or "0"
+      formData.append("is_repeater", sectionmaster.isRepeater ? "1" : "0");
+      formData.append("updatedBy", adminid);
+          formData.append("fieldsConfig", JSON.stringify(fields));
+
+
+      const res_data = await updatesectionmaster(id, formData);
+
+      if (
+        res_data.success === false ||
+        res_data.msg === "sectionmaster already exist"
+      ) {
+        toast.error(res_data.msg || "Failed to update sectionmaster");
+        return;
+      }
+
+      toast.success("sectionmaster updated successfully!");
+      navigate("/sectionmaster-list");
+    } catch (error) {
+      console.error("Update sectionmaster Error:", error);
+      toast.error("Something went wrong!");
+    }
+  };
+
+  return (
+    <div className="page-content">
+      <Container fluid>
+        <Breadcrumbs
+          title="UPDATE 
+Section Types Master"
+          breadcrumbItems={breadcrumbItems}
+        />
+        <Row>
+          <Col xl="12">
+            <Card>
+              <CardBody>
+                <form onSubmit={handleUpdateSubmit}>
+                  <Row>
+                    <Col md="6">
+                      <Label>Name</Label>
+                      <Input
+                        name="name"
+                        type="text"
+                        placeholder="Enter name"
+                        value={sectionmaster.name}
+                        onChange={handleInput}
+                      />
+                      {errors.name && (
+                        <span className="text-danger">{errors.name}</span>
+                      )}
+                    </Col>
+
+                    <Col md="6">
+                      <Label>Slug</Label>
+                      <Input
+                        name="slug"
+                        value={sectionmaster.slug}
+                        onChange={handleInput}
+                        placeholder="Slug"
+                        type="text"
+                      />
+                      {errors.slug && (
+                        <span className="text-danger">{errors.slug}</span>
+                      )}
+                    </Col>
+
+                    <Col md="6">
+                      <Label>Layout</Label>
+                      <Input
+                        type="select"
+                        name="layout"
+                        onChange={handleInput}
+                        value={sectionmaster.layout}
+                      >
+                        <option value="">Select</option>
+                        <option value="List">List</option>
+                        <option value="Cards">Cards</option>
+                        <option value="Table">Table</option>
+                        <option value="Media Gallery">Media Gallery</option>
+                      </Input>
+                      {errors.layout && (
+                        <span className="text-danger">{errors.layout}</span>
+                      )}
+                    </Col>
+
+                 
+                 {/* ✅ Flag: Is Repeater Checkbox */}
+                    <Col md="6" className="d-flex align-items-center mt-4">
+                      <Label check>
+                        <Input
+                          type="checkbox"
+                          name="isRepeater"
+                          checked={sectionmaster.isRepeater}
+                          onChange={handleCheckboxChange}
+                        />{" "}
+                        Flag: Is Repeater —{" "}
+                        <strong>
+                          {sectionmaster.isRepeater ? "Yes" : "No"}
+                        </strong>
+                      </Label>
+                    </Col>
+                  </Row>
+
+
+                  {/* 🧩 Fields Configuration Section */}
+                  <hr />
+                  <h5 className="mt-3 mb-2">Fields Configuration</h5>
+
+                  {fields.map((field, index) => (
+                    <Row key={index} className="align-items-center mb-2">
+                      <Col md="5">
+                        <Label>Title</Label>
+                        <Input
+                          name="title"
+                          type="text"
+                          placeholder="Enter field title"
+                          value={field.title}
+                          onChange={(e) => handleFieldChange(index, e)}
+                        />
+                      </Col>
+
+                      <Col md="5">
+                        <Label>Field Type</Label>
+                        <Input
+                          type="select"
+                          name="type"
+                          value={field.type}
+                          onChange={(e) => handleFieldChange(index, e)}
+                        >
+                          <option value="">Select Type</option>
+                          <option value="text_short">Text (Short)</option>
+                          <option value="text_long">Text (Long)</option>
+                          <option value="rich_text">Rich Text</option>
+                          <option value="number">Number</option>
+                          <option value="date">Date</option>
+                          <option value="url">URL (with Label)</option>
+                          <option value="media">Media (Image/Video)</option>
+                        </Input>
+                      </Col>
+
+                      <Col md="2" className="mt-4">
+                        {index > 0 && (
+                          <Button
+                            color="danger"
+                            type="button"
+                            onClick={() => removeField(index)}
+                          >
+                            Remove
+                          </Button>
+                        )}
+                      </Col>
+                    </Row>
+                  ))}
+
+                  <Button
+                    color="secondary"
+                    type="button"
+                    onClick={addMoreField}
+                    className="mt-2"
+                  >
+                    + Add More Field
+                  </Button>
+
+                  <Button color="primary" type="submit" className="mt-3 ms-2">
+                    Update
+                  </Button>
+                </form>
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </div>
+  );
+};
+
+export default Updatesectionmaster;

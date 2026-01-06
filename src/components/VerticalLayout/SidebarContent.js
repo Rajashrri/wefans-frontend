@@ -172,6 +172,10 @@ const { privileges, roleName } = this.state;
                 <i className="mdi mdi-account-key-outline"></i> 
                 <span className="ms-1">{this.props.t('Trivia Entries ')}</span>
               </Link>
+               <Link to="/sectionmaster-list" className="waves-effect">
+                <i className="mdi mdi-account-key-outline"></i> 
+                <span className="ms-1">{this.props.t('Section Types Master ')}</span>
+              </Link>
             </li>
            
          

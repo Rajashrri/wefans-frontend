@@ -108,6 +108,11 @@ import Timelinelist from "../pages/Timeline/Timelinelist";
 import AddTimeline from "../pages/Timeline/AddTimeline";
 import UpdateTimeline from "../pages/Timeline/UpdateTimeline";
 
+
+import SectionMasterList from "../pages/SectionMaster/SectionMasterList";
+import AddSectionMaster from "../pages/SectionMaster/AddSectionMaster";
+import UpdateSectionMaster from "../pages/SectionMaster/UpdateSectionMaster";
+
 import LanguageList from "../pages/LanguageMaster/LanguageList";
 import TriviaTypesList from "../pages/TriviaTypes/TriviaTypesList";
 
@@ -267,6 +272,11 @@ const authProtectedRoutes = [
   { path: "/timeline-list", component: <Timelinelist /> },
   { path: "/add-timeline", component: <AddTimeline /> },
   { path: "/update-timeline/:id", component: <UpdateTimeline /> },
+
+
+   { path: "/sectionmaster-list", component: <SectionMasterList /> },
+  { path: "/add-sectionmaster", component: <AddSectionMaster /> },
+  { path: "/update-sectionmaster/:id", component: <UpdateSectionMaster /> },
   //employee-list
   { path: "/triviaentries-list", component: <TriviaentriesList /> },
   { path: "/add-triviaentries", component: <CreateTriviaentries /> },
