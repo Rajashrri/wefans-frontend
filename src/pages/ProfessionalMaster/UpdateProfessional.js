@@ -11,55 +11,79 @@ import {
 } from "reactstrap";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import { toast } from "react-toastify";
-import { useParams,useNavigate } from "react-router-dom";
-import { getprofessionalmasterById, updateprofessionalmaster } from "../../api/professionalmasterApi";
- 
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  getprofessionalmasterById,
+  updateprofessionalmaster,
+  getSectionTemplateOptions,
+} from "../../api/professionalmasterApi";
+import Select from "react-select";
+
 const Updateprofessionalmaster = () => {
   const [professionalmaster, setprofessionalmaster] = useState({
     name: "",
-     slug: "",
+    slug: "",
     image: null,
     old_image: "",
+    sectiontemplate: [], // ✅ Initialize to avoid undefined errors
   });
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const [errors, setErrors] = useState({});
   const { id } = useParams();
+  const [sectiontemplateOptions, setSectionTemplateOptions] = useState([]);
 
   const breadcrumbItems = [
     { title: "Dashboard", link: "#" },
     { title: "Update Profession Master", link: "#" },
   ];
-
-  // Fetch professionalmaster data
-useEffect(() => {
-  const fetchprofessionalmaster = async () => {
+  const fetchSectionTemplateOptions = async () => {
     try {
-      const res_data = await getprofessionalmasterById(id);
-
-      if (res_data.msg) {
-        const data = res_data.msg;
-        setprofessionalmaster({
-          name: data.name || "",
-           slug: data.slug || "",
-          old_image: data.image || "",
-        });
-      } else {
-        toast.error("professionalmaster not found");
-      }
-    } catch (error) {
-      console.error("Fetch professionalmaster error:", error);
-      toast.error("Failed to fetch professionalmaster data");
+      const data = await getSectionTemplateOptions();
+      const options = (data.msg || []).map((item) => ({
+        value: item._id,
+        label: item.title?.trim() || item.title,
+      }));
+      setSectionTemplateOptions(options);
+    } catch (err) {
+      console.error("Error fetching language options:", err);
     }
   };
+  // Fetch professionalmaster data
+  useEffect(() => {
+    const fetchprofessionalmaster = async () => {
+      try {
+        const res_data = await getprofessionalmasterById(id);
 
-  fetchprofessionalmaster();
-}, [id]);
+        if (res_data.msg) {
+          const data = res_data.msg;
+          setprofessionalmaster({
+            name: data.name || "",
+            slug: data.slug || "",
+            old_image: data.image || "",
+            sectiontemplate: data.sectiontemplate
+              ? data.sectiontemplate.map((st) => st._id || st)
+              : [],
+          });
+        } else {
+          toast.error("professionalmaster not found");
+        }
+      } catch (error) {
+        console.error("Fetch professionalmaster error:", error);
+        toast.error("Failed to fetch professionalmaster data");
+      }
+    };
 
+    fetchprofessionalmaster();
+    fetchSectionTemplateOptions();
+  }, [id]);
 
   // Input handler
   const handleInput = (e) => {
-    setprofessionalmaster({ ...professionalmaster, [e.target.name]: e.target.value });
+    setprofessionalmaster({
+      ...professionalmaster,
+      [e.target.name]: e.target.value,
+    });
   };
   // Handle file change
   const handleFileChange = (e) => {
@@ -67,52 +91,59 @@ useEffect(() => {
     setprofessionalmaster((prev) => ({ ...prev, [name]: files[0] }));
   };
 
-
   // ✅ Submit update
   const handleUpdateSubmit = async (e) => {
-  e.preventDefault();
-  const newErrors = {};
+    e.preventDefault();
+    const newErrors = {};
 
-  if (!professionalmaster.name) newErrors.name = "Name is required";
+    if (!professionalmaster.name) newErrors.name = "Name is required";
 
-  if (Object.keys(newErrors).length > 0) {
-    setErrors(newErrors);
-    return;
-  }
-
-  try {
-    const adminid = localStorage.getItem("adminid");
-    const formData = new FormData();
-
-    formData.append("name", professionalmaster.name);
-        formData.append("slug", professionalmaster.slug);
-
-    formData.append("updatedBy", adminid);
-    if (professionalmaster.image) formData.append("image", professionalmaster.image);
-
-    const res_data = await updateprofessionalmaster(id, formData);
-
-    if (res_data.success === false || res_data.msg === "professionalmaster already exist") {
-      toast.error(res_data.msg || "Failed to update professionalmaster");
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
-    toast.success("professionalmaster updated successfully!");
-    navigate("/professional-list");
-  } catch (error) {
-    console.error("Update professionalmaster Error:", error);
-    toast.error("Something went wrong!");
-  }
-};
- 
+    try {
+      const adminid = localStorage.getItem("adminid");
+      const formData = new FormData();
 
- 
+      formData.append("name", professionalmaster.name);
+      formData.append("slug", professionalmaster.slug);
+      // ✅ Append sectiontemplate array as JSON string
+      formData.append(
+        "sectiontemplate",
+        JSON.stringify(professionalmaster.sectiontemplate || [])
+      );
+      formData.append("updatedBy", adminid);
+      if (professionalmaster.image)
+        formData.append("image", professionalmaster.image);
+
+      const res_data = await updateprofessionalmaster(id, formData);
+
+      if (
+        res_data.success === false ||
+        res_data.msg === "professionalmaster already exist"
+      ) {
+        toast.error(res_data.msg || "Failed to update professionalmaster");
+        return;
+      }
+
+      toast.success("professionalmaster updated successfully!");
+      navigate("/professional-list");
+    } catch (error) {
+      console.error("Update professionalmaster Error:", error);
+      toast.error("Something went wrong!");
+    }
+  };
 
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="UPDATE 
-Profession Master" breadcrumbItems={breadcrumbItems} />
+        <Breadcrumbs
+          title="UPDATE 
+Profession Master"
+          breadcrumbItems={breadcrumbItems}
+        />
         <Row>
           <Col xl="12">
             <Card>
@@ -132,12 +163,10 @@ Profession Master" breadcrumbItems={breadcrumbItems} />
                         onChange={handleInput}
                       />
                       {errors.name && (
-                        <span className="text-danger">
-                          {errors.name}
-                        </span>
+                        <span className="text-danger">{errors.name}</span>
                       )}
                     </Col>
-                     {/* Main Image */}
+                    {/* Main Image */}
                     <Col md="6">
                       <Label className="form-label">Image</Label>
                       <Input
@@ -157,7 +186,7 @@ Profession Master" breadcrumbItems={breadcrumbItems} />
                         </div>
                       )}
                     </Col>
-                   <Col md="6">
+                    <Col md="6">
                       <Label> Slug</Label>
                       <Input
                         name="slug"
@@ -167,10 +196,29 @@ Profession Master" breadcrumbItems={breadcrumbItems} />
                         onChange={handleInput}
                       />
                       {errors.slug && (
-                        <span className="text-danger">
-                          {errors.slug}
-                        </span>
+                        <span className="text-danger">{errors.slug}</span>
                       )}
+                    </Col>
+
+                    <Col md="6">
+                      <Label>Default Section Templates</Label>
+                      <Select
+                        isMulti
+                        name="sectiontemplate"
+                        options={sectiontemplateOptions}
+                        value={sectiontemplateOptions.filter((opt) =>
+                          professionalmaster.sectiontemplate.includes(opt.value)
+                        )}
+                        onChange={(selectedOptions) =>
+                          setprofessionalmaster((prev) => ({
+                            ...prev,
+                            sectiontemplate: selectedOptions.map(
+                              (opt) => opt.value
+                            ),
+                          }))
+                        }
+                        placeholder="Choose..."
+                      />
                     </Col>
                   </Row>
 

@@ -115,6 +115,7 @@ import UpdateSectionMaster from "../pages/SectionMaster/UpdateSectionMaster";
 
 import LanguageList from "../pages/LanguageMaster/LanguageList";
 import TriviaTypesList from "../pages/TriviaTypes/TriviaTypesList";
+import SectionTemplateList from "../pages/SectionTemplate/SectionTemplateList";
 
 import SocialLinkList from "../pages/SocialLink/SocialLinkList";
 
@@ -250,6 +251,7 @@ const authProtectedRoutes = [
   { path: "/celebrity-list", component: <CelebratyList /> },
   { path: "/add-celebrity", component: <AddCelebraty /> },
   { path: "/update-celebrity/:id", component: <UpdateCelebraty /> },
+  { path: "/sectiontemplate-list", component: <SectionTemplateList /> },
 
   { path: "/add-movie/:id", component: <AddSection /> },
   { path: "/list-movie/:id", component: <ListMoviev /> },
