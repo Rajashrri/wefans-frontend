@@ -31,7 +31,7 @@ const AddElection = () => {
   const celebrityId = id; // use it as celebrityId
 
   const [formData, setFormData] = useState({
-  election_year: "",
+    election_year: "",
     type: "",
     state: "",
     constituency: "",
@@ -44,9 +44,8 @@ const AddElection = () => {
     notes: "",
     reference: [], // ✅ Repeater field for reference links
     sort: "",
-    statusnew: "",
+    statusnew: "Draft", // ✅ Default value
     image: "",
-    
   });
 
   const [selectedFile, setSelectedFile] = useState(null);
@@ -132,7 +131,7 @@ const AddElection = () => {
     e.preventDefault();
 
     const newErrors = {};
-     if (!formData.election_year)
+    if (!formData.election_year)
       newErrors.election_year = "Election year is required";
     if (!formData.type) newErrors.type = "Election type is required";
 
@@ -159,7 +158,7 @@ const AddElection = () => {
       formDataToSend.append("reference", JSON.stringify(formData.reference));
       formDataToSend.append("sort", formData.sort);
       formDataToSend.append("statusnew", formData.statusnew);
-            formDataToSend.append("celebrityId", celebrityId);
+      formDataToSend.append("celebrityId", celebrityId);
 
       if (selectedFile) {
         formDataToSend.append("image", selectedFile);
@@ -194,7 +193,7 @@ const AddElection = () => {
         notes: "",
         reference: [],
         sort: "",
-        statusnew: "",
+        statusnew: "Draft", // ✅ Default value
       });
       setSelectedFile(null);
       setErrors({});

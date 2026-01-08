@@ -2,8 +2,8 @@
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 // ✅ Get all timelines
-export const gettimelines = async () => {
-  const response = await fetch(`${BASE_URL}/api/timeline/getdata`);
+export const gettimelines = async (id) => {
+  const response = await fetch(`${BASE_URL}/api/timeline/getdata/${id}`);
   if (!response.ok) throw new Error("Failed to fetch timeline");
   return response.json();
 };

@@ -17,6 +17,7 @@ import {
   getSeriesById,
   updateSeries,
   getLanguageOptions,
+  getGenreMaster,
 } from "../../api/seriesApi";
 
 const UpdateSeries = () => {
@@ -43,6 +44,7 @@ const UpdateSeries = () => {
     statusnew: "",
     statusseries: "",
     sort: "",
+    genre: "",
     old_image: "", // for preview
     seasons: [], // ✅ new field
   });
@@ -51,13 +53,28 @@ const UpdateSeries = () => {
   const [errors, setErrors] = useState({});
   const [languagesOptions, setLanguageOptions] = useState([]);
   const [celebrityId, setCelebrityId] = useState("");
+  const [optionscat, setOptions] = useState([]);
 
   // Fetch languages & Series data
   useEffect(() => {
     fetchLanguageOptions();
     fetchSeriesById();
+    fetchOptions();
   }, [id]);
-
+  const fetchOptions = async () => {
+    try {
+      const res_data = await getGenreMaster();
+      const options = Array.isArray(res_data.msg)
+        ? res_data.msg.map((item) => ({
+            value: item._id,
+            label: item.name?.trim() || item.name,
+          }))
+        : [];
+      setOptions(options);
+    } catch (error) {
+      console.error("Error fetching category options:", error);
+    }
+  };
   const fetchLanguageOptions = async () => {
     try {
       const data = await getLanguageOptions();
@@ -85,6 +102,7 @@ const UpdateSeries = () => {
           languages: data.languages || [],
           director: data.director || "",
           end_year: data.end_year || "",
+          genre: data.genre || "",
           statusseries: data.statusseries || "",
           notes: data.notes || "",
           platform: data.platform || "",
@@ -232,6 +250,33 @@ const UpdateSeries = () => {
                         <span className="text-danger">{errors.title}</span>
                       )}
                     </Col>
+                    <Col md="6">
+                      <div className="mb-3">
+                        <Label className="form-label">Select Genre </Label>
+                        <Select
+                          options={optionscat}
+                          name="genre"
+                          value={
+                            optionscat.find(
+                              (option) => option.value === formData.genre
+                            ) || null
+                          }
+                          onChange={(selectedOption) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              genre: selectedOption ? selectedOption.value : "",
+                              name: selectedOption ? selectedOption.label : "",
+                            }));
+                          }}
+                          isClearable
+                          placeholder="Select Genre..."
+                        />
+                        {errors.genre && (
+                          <span className="text-danger">{errors.genre}</span>
+                        )}
+                      </div>
+                    </Col>
+
                     <Col md="6">
                       <Label>Series Type</Label>
                       <Input

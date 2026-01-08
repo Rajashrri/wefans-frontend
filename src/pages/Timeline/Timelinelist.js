@@ -23,7 +23,7 @@ import {
 } from "react-table";
 import PropTypes from "prop-types";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import deleteimg from "../../assets/images/delete.png";
 import { toast } from "react-toastify";
 import {
@@ -31,9 +31,14 @@ import {
   deletetimeline,
   updatetimelineStatus,
 } from "../../api/timelineApi";
-
+import { useNavigate } from "react-router-dom";
+import { getCelebratyById } from "../../api/celebratyApi";
 // 🔎 Global filter component
-function GlobalFilter({ preGlobalFilteredRows, globalFilter, setGlobalFilter }) {
+function GlobalFilter({
+  preGlobalFilteredRows,
+  globalFilter,
+  setGlobalFilter,
+}) {
   const count = preGlobalFilteredRows.length;
   const [value, setValue] = useState(globalFilter);
 
@@ -68,7 +73,7 @@ const TableContainer = ({
   customPageSize,
   className,
   isGlobalFilter,
-  setModalOpen,
+  id,
 }) => {
   const {
     getTableProps,
@@ -129,13 +134,7 @@ const TableContainer = ({
             setGlobalFilter={setGlobalFilter}
           />
         )}
-        <Col md={6}>
-          <div className="d-flex justify-content-end">
-            <Link to="/add-timeline" className="btn btn-primary">
-              Add
-            </Link>
-          </div>
-        </Col>
+       
       </Row>
 
       <div className="table-responsive react-table">
@@ -235,10 +234,14 @@ TableContainer.propTypes = {
 
 // ✅ Corrected Component Name (Uppercase)
 const TimelineList = () => {
+  const { id } = useParams();
+  const celebrityId = id; // rename for clarity
   const [timelineList, setTimelineList] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalOpen2, setModalOpen2] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [celebrityName, setCelebrityName] = useState("");
+  const navigate = useNavigate();
 
   // 👇 Open modal and set ID
   const handleDelete = (id) => {
@@ -275,11 +278,11 @@ const TimelineList = () => {
   // Fetch data
   const fetchData = async () => {
     try {
-      const result = await gettimelines();
+      const result = await gettimelines(celebrityId);
       setTimelineList(result.msg || []);
     } catch (error) {
-      console.error("Error fetching professional masters:", error);
-      toast.error("Failed to load professional master data.");
+      console.error("Error fetching Timeline:", error);
+      toast.error("Failed to load Timeline data.");
     }
   };
 
@@ -294,7 +297,7 @@ const TimelineList = () => {
       const data = await deletetimeline(deleteId);
 
       if (data.success === false) {
-        toast.error(data.msg || "Failed to delete professional master");
+        toast.error(data.msg || "Failed to delete Timeline");
         return;
       }
 
@@ -309,10 +312,23 @@ const TimelineList = () => {
       toast.error("Something went wrong.");
     }
   };
+  const fetchCelebrityName = async () => {
+    try {
+      const response = await getCelebratyById(celebrityId);
+      if (response.msg?.name) {
+        setCelebrityName(response.msg.name);
+      } else {
+        console.warn("No name found in response:", response);
+      }
+    } catch (err) {
+      console.error("Error fetching celebrity:", err);
+    }
+  };
 
   useEffect(() => {
     fetchData();
-  }, []);
+    fetchCelebrityName();
+  }, [celebrityId]);
 
   const columns = useMemo(
     () => [
@@ -374,25 +390,43 @@ const TimelineList = () => {
 
   const breadcrumbItems = [
     { title: "Dashboard", link: "/" },
-    { title: "PProfession Master", link: "#" },
+    { title: "Timeline", link: "#" },
   ];
 
   return (
     <Fragment>
       <div className="page-content">
         <Container fluid>
-          <Breadcrumbs
-            title="Profession Master"
-            breadcrumbItems={breadcrumbItems}
-          />
+          <Breadcrumbs title="Timeline" breadcrumbItems={breadcrumbItems} />
           <Card>
             <CardBody>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h4 className="mb-0">
+                  Timeline List{" "}
+                  {celebrityName && (
+                    <span className="text-muted">— {celebrityName}</span>
+                  )}
+                </h4>
+
+                <div className="d-flex gap-2">
+                  <Link to={`/add-timeline/${id}`} className="btn btn-primary">
+                    + Add Timeline
+                  </Link>
+                  <Button
+                    color="secondary"
+                    onClick={() => navigate("/celebrity-list")}
+                  >
+                    ← Back
+                  </Button>
+                </div>
+              </div>
               <TableContainer
                 columns={columns}
                 data={timelineList}
                 customPageSize={10}
                 isGlobalFilter={true}
                 setModalOpen={setModalOpen}
+                id={id} // <-- pass it here
               />
             </CardBody>
           </Card>

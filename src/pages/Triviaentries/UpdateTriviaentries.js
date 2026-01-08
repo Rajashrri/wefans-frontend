@@ -22,7 +22,7 @@ import {
 const UpdateTriviaentries = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
+  const [celebrityId, setCelebrityId] = useState("");
   const [optionscat, setOptions] = useState([]);
   const [errors, setErrors] = useState({});
   const [trivia, setTrivia] = useState({
@@ -72,6 +72,7 @@ const UpdateTriviaentries = () => {
           source_link: entry.source_link || "",
           old_media: entry.media || "",
         });
+        setCelebrityId(entry.celebrityId);
       } else {
         toast.error("Failed to load trivia entry");
       }
@@ -126,7 +127,7 @@ const UpdateTriviaentries = () => {
       }
 
       toast.success("Trivia Entry updated successfully!");
-      navigate("/triviaentries-list");
+      navigate(`/triviaentries-list/${celebrityId}`);
     } catch (error) {
       console.error("Update Trivia Entry Error:", error);
       toast.error("Something went wrong!");
@@ -172,7 +173,9 @@ const UpdateTriviaentries = () => {
                         placeholder="Select category..."
                       />
                       {errors.category_id && (
-                        <span className="text-danger">{errors.category_id}</span>
+                        <span className="text-danger">
+                          {errors.category_id}
+                        </span>
                       )}
                     </Col>
 
@@ -242,10 +245,20 @@ const UpdateTriviaentries = () => {
                       />
                     </Col>
                   </Row>
-
-                  <Button color="primary" type="submit" className="mt-3">
-                    Update Trivia Entry
-                  </Button>
+                  <div className="d-flex gap-2 mt-3">
+                    <Button type="submit" color="primary">
+                      Update Trivia Entry
+                    </Button>
+                    <Button
+                      type="button"
+                      color="secondary"
+                      onClick={() =>
+                        navigate(`/triviaentries-list/${celebrityId}`)
+                      }
+                    >
+                      ← Back
+                    </Button>
+                  </div>
                 </form>
               </CardBody>
             </Card>

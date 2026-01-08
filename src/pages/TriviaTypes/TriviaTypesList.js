@@ -264,54 +264,52 @@ const RoleMasterList = () => {
     setDeleteId(null);
   };
   //for datatable
-const fetchData = async () => {
-  try {
-    const result = await fetchTriviaTypes();
-    setcategorylist(result.msg);
-  } catch (error) {
-    toast.error("Failed to load categories.");
-  }
-};
+  const fetchData = async () => {
+    try {
+      const result = await fetchTriviaTypes();
+      setcategorylist(result.msg);
+    } catch (error) {
+      toast.error("Failed to load categories.");
+    }
+  };
 
-const handleChange = async (currentStatus, id) => {
-  const newStatus = currentStatus == 1 ? 0 : 1;
-  try {
-    await updateTriviaTypesStatus(id, newStatus);
-    toast.success("Status updated successfully");
-    fetchData();
-  } catch (error) {
-    toast.error("Failed to update status");
-  }
-};
+  const handleChange = async (currentStatus, id) => {
+    const newStatus = currentStatus == 1 ? 0 : 1;
+    try {
+      await updateTriviaTypesStatus(id, newStatus);
+      toast.success("Status updated successfully");
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to update status");
+    }
+  };
 
   const [itemIdToDelete, setItemIdToDelete] = useState(null);
 
   //for edit
- const handleedit = async (id) => {
-  try {
-    const data = await getTriviaTypesById(id);
-    setcategory({ name: data.msg[0].name });
-    setItemIdToDelete(data.msg[0]._id);
-    setModalOpen(true);
-  } catch (error) {
-    toast.error("Failed to load category data");
-  }
-};
-
+  const handleedit = async (id) => {
+    try {
+      const data = await getTriviaTypesById(id);
+      setcategory({ name: data.msg[0].name });
+      setItemIdToDelete(data.msg[0]._id);
+      setModalOpen(true);
+    } catch (error) {
+      toast.error("Failed to load category data");
+    }
+  };
 
   // 👇 Confirm delete function
- const handleyesno = async () => {
-  if (!deleteId) return toast.error("No ID to delete.");
-  try {
-    const data = await deleteTriviaTypes(deleteId);
-    toast.success("Deleted successfully");
-    setModalOpen2(false);
-    fetchData();
-  } catch (error) {
-    toast.error("Delete failed");
-  }
-};
-
+  const handleyesno = async () => {
+    if (!deleteId) return toast.error("No ID to delete.");
+    try {
+      const data = await deleteTriviaTypes(deleteId);
+      toast.success("Deleted successfully");
+      setModalOpen2(false);
+      fetchData();
+    } catch (error) {
+      toast.error("Delete failed");
+    }
+  };
 
   const handleStatusToggle = (id) => {
     setcategorylist((prevList) =>
@@ -332,9 +330,9 @@ const handleChange = async (currentStatus, id) => {
         Header: "No.",
         accessor: (_row, i) => i + 1,
       },
-{ Header: "Created Date", accessor: "createdAt" },
-      { Header: "Category Name", accessor: "name" },
-    
+      { Header: "Created Date", accessor: "createdAt" },
+      { Header: "Name", accessor: "name" },
+
       {
         Header: "Status",
         accessor: "status",
@@ -413,65 +411,56 @@ const handleChange = async (currentStatus, id) => {
 
   const [errors, setErrors] = useState({});
 
-const handleaddsubmit = async (e) => {
-  e.preventDefault();
+  const handleaddsubmit = async (e) => {
+    e.preventDefault();
 
-  // 🔸 Basic validation
-  if (!category.name) {
-    setErrors({ name: "Name is required" });
-    return;
-  }
-
-  try {
-    const adminid = localStorage.getItem("adminid");
-    const payload = { ...category, createdBy: adminid };
-    let res_data;
-
-    if (itemIdToDelete) {
-      // 🔸 Update existing category
-      res_data = await updateTriviaTypes(itemIdToDelete, payload);
-
-      if (res_data.msg === "Name already exist") {
-        setErrors({ name: res_data.msg });
-        toast.error(res_data.msg);
-        return;
-      }
-
-      if (res_data.success === false || res_data.error) {
-        toast.error(res_data.msg || "Update failed.");
-        return;
-      }
-
-      toast.success("Updated successfully");
-    } else {
-      // 🔸 Add new category
-      res_data = await addTriviaTypes(payload);
-
-      if (res_data.msg === "Name already exist") {
-        setErrors({ name: res_data.msg });
-        toast.error(res_data.msg);
-        return;
-      }
-
-      if (!res_data.success && res_data.error) {
-        toast.error(res_data.msg || "Add failed.");
-        return;
-      }
-
-      toast.success("Added successfully");
+    if (!category.name) {
+      setErrors({ name: "Name is required" });
+      return;
     }
 
-    // 🔸 On success
-    handleClose1();
-    setcategory({ name: "" });
-    setErrors({});
-    fetchData();
-  } catch (error) {
-    console.error("Add/Update Category Error:", error);
-    toast.error("Something went wrong.");
-  }
-};
+    try {
+      const adminid = localStorage.getItem("adminid");
+      const payload = { ...category, createdBy: adminid };
+      let res_data;
 
+      if (itemIdToDelete) {
+        // 🔸 Update
+        res_data = await updateTriviaTypes(itemIdToDelete, payload);
+      } else {
+        // 🔸 Add
+        res_data = await addTriviaTypes(payload);
+      }
+
+      // ✅ Handle duplicate error
+      if (
+        res_data.success === false &&
+        res_data.msg.includes("already exist")
+      ) {
+        setErrors({ name: res_data.msg });
+        toast.error(res_data.msg);
+        return;
+      }
+
+      // ✅ Handle server errors
+      if (res_data.success === false || res_data.error) {
+        toast.error(res_data.msg || "Operation failed.");
+        return;
+      }
+
+      // ✅ Success
+      toast.success(
+        itemIdToDelete ? "Updated successfully" : "Added successfully"
+      );
+      handleClose1();
+      setcategory({ name: "" });
+      setErrors({});
+      fetchData();
+    } catch (error) {
+      console.error("Add/Update Category Error:", error);
+      toast.error("Something went wrong.");
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -481,7 +470,10 @@ const handleaddsubmit = async (e) => {
     <Fragment>
       <div className="page-content">
         <Container fluid>
-          <Breadcrumbs title="TriviaTypes Master" breadcrumbItems={breadcrumbItems} />
+          <Breadcrumbs
+            title="TriviaTypes Master"
+            breadcrumbItems={breadcrumbItems}
+          />
           <Card>
             <CardBody>
               <TableContainer

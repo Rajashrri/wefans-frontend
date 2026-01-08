@@ -264,54 +264,52 @@ const RoleMasterList = () => {
     setDeleteId(null);
   };
   //for datatable
-const fetchData = async () => {
-  try {
-    const result = await fetchSocialLink();
-    setcategorylist(result.msg);
-  } catch (error) {
-    toast.error("Failed to load categories.");
-  }
-};
+  const fetchData = async () => {
+    try {
+      const result = await fetchSocialLink();
+      setcategorylist(result.msg);
+    } catch (error) {
+      toast.error("Failed to load categories.");
+    }
+  };
 
-const handleChange = async (currentStatus, id) => {
-  const newStatus = currentStatus == 1 ? 0 : 1;
-  try {
-    await updateSocialLinkStatus(id, newStatus);
-    toast.success("Status updated successfully");
-    fetchData();
-  } catch (error) {
-    toast.error("Failed to update status");
-  }
-};
+  const handleChange = async (currentStatus, id) => {
+    const newStatus = currentStatus == 1 ? 0 : 1;
+    try {
+      await updateSocialLinkStatus(id, newStatus);
+      toast.success("Status updated successfully");
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to update status");
+    }
+  };
 
   const [itemIdToDelete, setItemIdToDelete] = useState(null);
 
   //for edit
- const handleedit = async (id) => {
-  try {
-    const data = await getSocialLinkById(id);
-    setcategory({ name: data.msg[0].name });
-    setItemIdToDelete(data.msg[0]._id);
-    setModalOpen(true);
-  } catch (error) {
-    toast.error("Failed to load category data");
-  }
-};
-
+  const handleedit = async (id) => {
+    try {
+      const data = await getSocialLinkById(id);
+      setcategory({ name: data.msg[0].name });
+      setItemIdToDelete(data.msg[0]._id);
+      setModalOpen(true);
+    } catch (error) {
+      toast.error("Failed to load category data");
+    }
+  };
 
   // 👇 Confirm delete function
- const handleyesno = async () => {
-  if (!deleteId) return toast.error("No ID to delete.");
-  try {
-    const data = await deleteSocialLink(deleteId);
-    toast.success("Deleted successfully");
-    setModalOpen2(false);
-    fetchData();
-  } catch (error) {
-    toast.error("Delete failed");
-  }
-};
-
+  const handleyesno = async () => {
+    if (!deleteId) return toast.error("No ID to delete.");
+    try {
+      const data = await deleteSocialLink(deleteId);
+      toast.success("Deleted successfully");
+      setModalOpen2(false);
+      fetchData();
+    } catch (error) {
+      toast.error("Delete failed");
+    }
+  };
 
   const handleStatusToggle = (id) => {
     setcategorylist((prevList) =>
@@ -332,9 +330,9 @@ const handleChange = async (currentStatus, id) => {
         Header: "No.",
         accessor: (_row, i) => i + 1,
       },
-{ Header: "Created Date", accessor: "createdAt" },
+      { Header: "Created Date", accessor: "createdAt" },
       { Header: "Name", accessor: "name" },
-    
+
       {
         Header: "Status",
         accessor: "status",
@@ -412,66 +410,54 @@ const handleChange = async (currentStatus, id) => {
   const [data, setData] = useState([]);
 
   const [errors, setErrors] = useState({});
+  const handleaddsubmit = async (e) => {
+    e.preventDefault();
 
-const handleaddsubmit = async (e) => {
-  e.preventDefault();
-
-  // 🔸 Basic validation
-  if (!category.name) {
-    setErrors({ name: "Name is required" });
-    return;
-  }
-
-  try {
-    const adminid = localStorage.getItem("adminid");
-    const payload = { ...category, createdBy: adminid };
-    let res_data;
-
-    if (itemIdToDelete) {
-      // 🔸 Update existing category
-      res_data = await updateSocialLink(itemIdToDelete, payload);
-
-      if (res_data.msg === "Name already exist") {
-        setErrors({ name: res_data.msg });
-        toast.error(res_data.msg);
-        return;
-      }
-
-      if (res_data.success === false || res_data.error) {
-        toast.error(res_data.msg || "Update failed.");
-        return;
-      }
-
-      toast.success("Updated successfully");
-    } else {
-      // 🔸 Add new category
-      res_data = await addSocialLink(payload);
-
-      if (res_data.msg === "Name already exist") {
-        setErrors({ name: res_data.msg });
-        toast.error(res_data.msg);
-        return;
-      }
-
-      if (!res_data.success && res_data.error) {
-        toast.error(res_data.msg || "Add failed.");
-        return;
-      }
-
-      toast.success("Added successfully");
+    if (!category.name) {
+      setErrors({ name: "Name is required" });
+      return;
     }
 
-    // 🔸 On success
-    handleClose1();
-    setcategory({ name: "" });
-    setErrors({});
-    fetchData();
-  } catch (error) {
-    console.error("Add/Update Category Error:", error);
-    toast.error("Something went wrong.");
-  }
-};
+    try {
+      const adminid = localStorage.getItem("adminid");
+      const payload = { ...category, createdBy: adminid };
+      let res_data;
 
+      if (itemIdToDelete) {
+        res_data = await updateSocialLink(itemIdToDelete, payload);
+      } else {
+        res_data = await addSocialLink(payload);
+      }
+
+      // ✅ Duplicate name handling
+      if (
+        res_data.success === false &&
+        res_data.msg.includes("already exist")
+      ) {
+        setErrors({ name: res_data.msg });
+        toast.error(res_data.msg);
+        return;
+      }
+
+      // ✅ Server error
+      if (res_data.success === false || res_data.error) {
+        toast.error(res_data.msg || "Operation failed.");
+        return;
+      }
+
+      // ✅ Success
+      toast.success(
+        itemIdToDelete ? "Updated successfully" : "Added successfully"
+      );
+      handleClose1();
+      setcategory({ name: "" });
+      setErrors({});
+      fetchData();
+    } catch (error) {
+      console.error("Add/Update SocialLink Error:", error);
+      toast.error("Something went wrong.");
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -481,7 +467,10 @@ const handleaddsubmit = async (e) => {
     <Fragment>
       <div className="page-content">
         <Container fluid>
-          <Breadcrumbs title="SocialLink Master" breadcrumbItems={breadcrumbItems} />
+          <Breadcrumbs
+            title="SocialLink Master"
+            breadcrumbItems={breadcrumbItems}
+          />
           <Card>
             <CardBody>
               <TableContainer
@@ -497,7 +486,7 @@ const handleaddsubmit = async (e) => {
 
         <Modal isOpen={modalOpen} toggle={() => setModalOpen(!modalOpen)}>
           <ModalHeader toggle={() => setModalOpen(!modalOpen)}>
-            {!itemIdToDelete ? "Add" : "Edit"} Social Link 
+            {!itemIdToDelete ? "Add" : "Edit"} Social Link
           </ModalHeader>
           <form onSubmit={handleaddsubmit}>
             <ModalBody>

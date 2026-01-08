@@ -447,7 +447,20 @@ const CelebratyList = () => {
               >
                 Delete
               </Button>
+              {/* ✅ New Buttons: Timeline & Trivia Entries */}
+              <Link
+                to={`/timeline-list/${row.original._id}`}
+                className="btn btn-dark btn-sm"
+              >
+                Timeline Entries
+              </Link>
 
+              <Link
+                to={`/triviaentries-list/${row.original._id}`}
+                className="btn btn-outline-dark btn-sm"
+              >
+                Trivia Entries
+              </Link>
               {/* Actor Buttons */}
               {isActor && (
                 <>
@@ -455,14 +468,14 @@ const CelebratyList = () => {
                     to={`/list-movie/${row.original._id}`}
                     className="btn btn-success btn-sm"
                   >
-                    Add Movie
+                     Movie
                   </Link>
 
                   <Link
                     to={`/list-series/${row.original._id}`}
                     className="btn btn-warning btn-sm"
                   >
-                    Add TV/Web Series
+                     TV/Web Series
                   </Link>
                 </>
               )}
@@ -474,7 +487,7 @@ const CelebratyList = () => {
                     to={`/list-election/${row.original._id}`}
                     className="btn btn-info btn-sm"
                   >
-                    Add Election
+                     Election
                   </Link>
 
                   <Link

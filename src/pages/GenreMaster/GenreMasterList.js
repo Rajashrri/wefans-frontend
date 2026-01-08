@@ -9,6 +9,7 @@ import {
   Button,
   Input,
   Modal,
+  ModalHeader,
   ModalBody,
   ModalFooter,
 } from "reactstrap";
@@ -23,19 +24,18 @@ import {
 } from "react-table";
 import PropTypes from "prop-types";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
-import { Link, useParams } from "react-router-dom";
+import prvi from "../../assets/images/privileges.png";
 import deleteimg from "../../assets/images/delete.png";
 import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
 import {
-  getTriviaentries,
-  gettriviaentriesCategories,
-  updateTriviaentriesStatus,
-  deleteTriviaentries,
-} from "../../api/triviaentriesApi";
-import { useNavigate } from "react-router-dom";
-
-import { getCelebratyById } from "../../api/celebratyApi";
-// 🔍 Global Search Filter
+  fetchGenreMaster,
+  addGenreMaster,
+  updateGenreMaster,
+  deleteGenreMaster,
+  getGenreMasterById,
+  updateGenreMasterStatus,
+} from "../../api/GenreMasterApi";
 function GlobalFilter({
   preGlobalFilteredRows,
   globalFilter,
@@ -74,7 +74,7 @@ const TableContainer = ({
   customPageSize,
   className,
   isGlobalFilter,
-  id,
+  setModalOpen,
 }) => {
   const {
     getTableProps,
@@ -135,6 +135,13 @@ const TableContainer = ({
             setGlobalFilter={setGlobalFilter}
           />
         )}
+        <Col md={6}>
+          <div className="d-flex justify-content-end">
+            <Button color="primary" onClick={() => setModalOpen(true)}>
+              Add
+            </Button>
+          </div>
+        </Col>
       </Row>
 
       <div className="table-responsive react-table">
@@ -232,135 +239,106 @@ TableContainer.propTypes = {
   setModalOpen: PropTypes.func.isRequired,
 };
 
-const TriviaentriesList = () => {
+const RoleMasterList = () => {
+  const [category, setcategory] = useState({
+    name: "",
+  });
+
+  const [rolelist, setcategorylist] = useState([]);
+
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalOpen1, setModalOpen1] = useState(false);
+
   const [modalOpen2, setModalOpen2] = useState(false);
-  const [entries, setEntries] = useState([]);
   const [deleteId, setDeleteId] = useState(null);
-  const [categoryMap, setCategoryMap] = useState({});
-  const { id } = useParams();
-  const celebrityId = id; // rename for clarity
-  const [celebrityName, setCelebrityName] = useState("");
-  const navigate = useNavigate();
-  // ✅ Fetch categories
-  const fetchCategories = async () => {
-    try {
-      const data = await gettriviaentriesCategories();
-      const categoryData = Array.isArray(data.msg)
-        ? data.msg.reduce((acc, item) => {
-            acc[item._id] = item.name;
-            return acc;
-          }, {})
-        : {};
-      setCategoryMap(categoryData);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      toast.error("Failed to load categories");
-    }
-  };
-  const fetchCelebrityName = async () => {
-    try {
-      const response = await getCelebratyById(celebrityId);
-      if (response.msg?.name) {
-        setCelebrityName(response.msg.name);
-      } else {
-        console.warn("No name found in response:", response);
-      }
-    } catch (err) {
-      console.error("Error fetching celebrity:", err);
-    }
-  };
 
-  // ✅ Fetch Trivia Entries (Fixed)
-  const fetchData = async () => {
-    try {
-      const result = await getTriviaentries(celebrityId);
-      console.log("API response:", result);
-
-      // 🔧 Ensure we always get an array
-      const dataArray = Array.isArray(result.msg)
-        ? result.msg
-        : result.msg?.data
-        ? result.msg.data
-        : [];
-
-      setEntries(dataArray);
-    } catch (error) {
-      console.error("Error fetching entries:", error);
-      toast.error("Failed to load entries");
-    }
-  };
-
-  // ✅ Update Status
-  const handleChange = async (currentStatus, id) => {
-    const newStatus = currentStatus == 1 ? 0 : 1;
-    try {
-      const res_data = await updateTriviaentriesStatus(id, newStatus);
-      if (res_data.success === false) {
-        toast.error(res_data.msg || "Failed to update status");
-        return;
-      }
-      toast.success("Status updated successfully");
-      fetchData();
-    } catch (error) {
-      console.error("Error updating status:", error);
-      toast.error("Failed to update status");
-    }
-  };
-
-  // ✅ Delete Entry
+  // 👇 Open modal and set ID
   const handleDelete = (id) => {
     setDeleteId(id);
     setModalOpen2(true);
   };
 
+  // 👇 Close modal and reset ID
   const handleClose = () => {
     setModalOpen2(false);
     setDeleteId(null);
   };
-
-  const confirmDelete = async () => {
-    if (!deleteId) {
-      toast.error("No ID to delete.");
-      return;
-    }
+  //for datatable
+  const fetchData = async () => {
     try {
-      const data = await deleteTriviaentries(deleteId);
-      if (data.success === false) {
-        toast.error(data.msg || "Failed to delete entry");
-        return;
-      }
-      toast.success("Trivia Entry deleted successfully");
-      setEntries((prev) => prev.filter((row) => row._id !== deleteId));
-      setModalOpen2(false);
-      setDeleteId(null);
+      const result = await fetchGenreMaster();
+      setcategorylist(result.msg);
     } catch (error) {
-      console.error("Delete error:", error);
-      toast.error("Something went wrong.");
+      toast.error("Failed to load categories.");
     }
   };
 
-  useEffect(() => {
-    fetchData();
-    fetchCategories();
-    fetchCelebrityName();
-  }, [celebrityId]);
+  const handleChange = async (currentStatus, id) => {
+    const newStatus = currentStatus == 1 ? 0 : 1;
+    try {
+      await updateGenreMasterStatus(id, newStatus);
+      toast.success("Status updated successfully");
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to update status");
+    }
+  };
+
+  const [itemIdToDelete, setItemIdToDelete] = useState(null);
+
+  //for edit
+  const handleedit = async (id) => {
+    try {
+      const data = await getGenreMasterById(id);
+      setcategory({ name: data.msg[0].name });
+      setItemIdToDelete(data.msg[0]._id);
+      setModalOpen(true);
+    } catch (error) {
+      toast.error("Failed to load category data");
+    }
+  };
+
+  // 👇 Confirm delete function
+  const handleyesno = async () => {
+    if (!deleteId) return toast.error("No ID to delete.");
+    try {
+      const data = await deleteGenreMaster(deleteId);
+      toast.success("Deleted successfully");
+      setModalOpen2(false);
+      fetchData();
+    } catch (error) {
+      toast.error("Delete failed");
+    }
+  };
+
+  const handleStatusToggle = (id) => {
+    setcategorylist((prevList) =>
+      prevList.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              status: item.status === "Active" ? "Inactive" : "Active",
+            }
+          : item
+      )
+    );
+  };
 
   const columns = useMemo(
     () => [
-      { Header: "No.", accessor: (_row, i) => i + 1 },
-      { Header: "Created Date", accessor: "createdAt" },
-      { Header: "Title", accessor: "title" },
       {
-        Header: "Category",
-        accessor: "category_id",
-        Cell: ({ row }) => categoryMap[row.original.category_id] || "N/A",
+        Header: "No.",
+        accessor: (_row, i) => i + 1,
       },
+      { Header: "Created Date", accessor: "createdAt" },
+      { Header: "Name", accessor: "name" },
+
       {
         Header: "Status",
         accessor: "status",
         Cell: ({ row }) => {
           const isActive = row.original.status == 1;
+
           return (
             <div className="form-check form-switch">
               <input
@@ -382,16 +360,18 @@ const TriviaentriesList = () => {
           );
         },
       },
+
       {
         Header: "Option",
         Cell: ({ row }) => (
           <div className="d-flex gap-2">
-            <Link
-              to={`/update-triviaentries/${row.original._id}`}
-              className="btn btn-primary btn-sm"
+            <Button
+              color="primary"
+              onClick={() => handleedit(row.original._id)}
+              size="sm"
             >
               Edit
-            </Link>
+            </Button>
             <Button
               color="danger"
               size="sm"
@@ -403,77 +383,173 @@ const TriviaentriesList = () => {
         ),
       },
     ],
-    [entries, categoryMap]
+    [rolelist]
   );
 
   const breadcrumbItems = [
     { title: "Dashboard", link: "/" },
-    { title: "Trivia Entries", link: "#" },
+    { title: "Genre Master", link: "#" },
   ];
+  const handleinput = (e) => {
+    let name = e.target.name;
+    let value = e.target.value;
+    setcategory({
+      ...category,
+      [name]: value,
+    });
+  };
+  const handleClose1 = () => {
+    setModalOpen(false);
+    setItemIdToDelete(null);
+    setcategory({
+      name: "",
+    });
+  };
+
+  // const [itemIdToDelete, setItemIdToDelete] = useState(null);
+  const [data, setData] = useState([]);
+
+  const [errors, setErrors] = useState({});
+  const handleaddsubmit = async (e) => {
+    e.preventDefault();
+
+    if (!category.name) {
+      setErrors({ name: "Name is required" });
+      return;
+    }
+
+    try {
+      const adminid = localStorage.getItem("adminid");
+      const payload = { ...category, createdBy: adminid };
+      let res_data;
+
+      if (itemIdToDelete) {
+        res_data = await updateGenreMaster(itemIdToDelete, payload);
+      } else {
+        res_data = await addGenreMaster(payload);
+      }
+
+      // ✅ Duplicate name handling
+      if (
+        res_data.success === false &&
+        res_data.msg.includes("already exist")
+      ) {
+        setErrors({ name: res_data.msg });
+        toast.error(res_data.msg);
+        return;
+      }
+
+      // ✅ Server error
+      if (res_data.success === false || res_data.error) {
+        toast.error(res_data.msg || "Operation failed.");
+        return;
+      }
+
+      // ✅ Success
+      toast.success(
+        itemIdToDelete ? "Updated successfully" : "Added successfully"
+      );
+      handleClose1();
+      setcategory({ name: "" });
+      setErrors({});
+      fetchData();
+    } catch (error) {
+      console.error("Add/Update Genre Master Error:", error);
+      toast.error("Something went wrong.");
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
     <Fragment>
       <div className="page-content">
         <Container fluid>
           <Breadcrumbs
-            title="Trivia Entries"
+            title="Genre Master"
             breadcrumbItems={breadcrumbItems}
           />
           <Card>
             <CardBody>
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h4 className="mb-0">
-                  Trivia Entries List{" "}
-                  {celebrityName && (
-                    <span className="text-muted">— {celebrityName}</span>
-                  )}
-                </h4>
-
-                <div className="d-flex gap-2">
-                  <Link
-                    to={`/add-triviaentries/${id}`}
-                    className="btn btn-primary"
-                  >
-                    + Add Trivia Entries
-                  </Link>
-                  <Button
-                    color="secondary"
-                    onClick={() => navigate("/celebrity-list")}
-                  >
-                    ← Back
-                  </Button>
-                </div>
-              </div>
               <TableContainer
                 columns={columns}
-                data={entries}
+                data={rolelist}
                 customPageSize={10}
                 isGlobalFilter={true}
                 setModalOpen={setModalOpen}
-                id={id} // <-- pass it here
               />
             </CardBody>
           </Card>
         </Container>
 
-        {/* Delete Confirmation Modal */}
-        <Modal isOpen={modalOpen2} toggle={() => setModalOpen2(!modalOpen2)}>
-          <ModalBody className="mt-3 text-center">
-            <h4>Do you really want to delete this entry?</h4>
-            <div className="d-flex justify-content-center mt-3">
+        <Modal isOpen={modalOpen} toggle={() => setModalOpen(!modalOpen)}>
+          <ModalHeader toggle={() => setModalOpen(!modalOpen)}>
+            {!itemIdToDelete ? "Add" : "Edit"} Genre Master
+          </ModalHeader>
+          <form onSubmit={handleaddsubmit}>
+            <ModalBody>
+              <Input
+                type="text"
+                value={category.name || ""}
+                onChange={handleinput}
+                name="name"
+                placeholder="Name"
+                className="mb-2"
+              />
+              {errors.name && (
+                <span className="text-danger">{errors.name}</span>
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Button color="primary" type="submit">
+                {!itemIdToDelete ? "Add" : "Update"}
+              </Button>
+              <Button color="secondary" onClick={() => setModalOpen(false)}>
+                Cancel
+              </Button>
+            </ModalFooter>
+          </form>
+        </Modal>
+
+        <Modal isOpen={modalOpen1} toggle={() => setModalOpen1(!modalOpen1)}>
+          <ModalHeader toggle={() => setModalOpen1(!modalOpen1)}>
+            Update Blog Category
+          </ModalHeader>
+          <ModalBody>
+            <Input type="text" placeholder="Name" className="mb-2" />
+          </ModalBody>
+          <ModalFooter>
+            <Button color="primary" onClick={() => setModalOpen1(false)}>
+              Update
+            </Button>
+            <Button color="secondary" onClick={() => setModalOpen1(false)}>
+              Cancel
+            </Button>
+          </ModalFooter>
+        </Modal>
+
+        {/*  Modal for Delete Confirmation */}
+        <Modal isOpen={modalOpen2} toggle={() => setModalOpen2(false)}>
+          <ModalBody className="mt-3">
+            <h4 className="p-3 text-center">
+              Do you really want to <br /> delete the file?
+            </h4>
+            <div className="d-flex justify-content-center">
               <img
                 src={deleteimg}
-                alt="Delete"
-                width="70%"
+                alt="Privilege Icon"
+                width={"70%"}
                 className="mb-3 m-auto"
               />
             </div>
           </ModalBody>
           <ModalFooter>
-            <Button color="danger" onClick={confirmDelete}>
+            <Button color="danger" onClick={handleyesno}>
               Delete
             </Button>
-            <Button color="secondary" onClick={handleClose}>
+            <Button color="secondary" onClick={() => handleClose()}>
               Cancel
             </Button>
           </ModalFooter>
@@ -483,4 +559,4 @@ const TriviaentriesList = () => {
   );
 };
 
-export default TriviaentriesList;
+export default RoleMasterList;

@@ -12,18 +12,22 @@ import {
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import { toast } from "react-toastify";
 import { useParams, useNavigate } from "react-router-dom";
-import { getsectionmasterById, updatesectionmaster } from "../../api/sectionmasterApi";
+import {
+  getsectionmasterById,
+  updatesectionmaster,
+} from "../../api/sectionmasterApi";
 
 const Updatesectionmaster = () => {
   const [sectionmaster, setSectionMaster] = useState({
-     name: "",
+    name: "",
     slug: "",
     layout: "",
-        isRepeater: false, // ✅ added new field
-
+    isRepeater: false, // ✅ added new field
   });
   const navigate = useNavigate();
- const [fields, setFields] = useState([{ title: "", type: "" ,isRequired: false, options: [""]}]);
+  const [fields, setFields] = useState([
+    { title: "", type: "", isRequired: false, options: [""] },
+  ]);
   const [errors, setErrors] = useState({});
   const { id } = useParams();
 
@@ -31,7 +35,7 @@ const Updatesectionmaster = () => {
     { title: "Dashboard", link: "#" },
     { title: "Update Section Types Master", link: "#" },
   ];
- // Generate year options (1980 - current year + 5)
+  // Generate year options (1980 - current year + 5)
   const currentYear = new Date().getFullYear();
   const yearOptions = [];
   for (let y = 1980; y <= currentYear + 5; y++) {
@@ -49,9 +53,9 @@ const Updatesectionmaster = () => {
             name: data.name || "",
             slug: data.slug || "",
             layout: data.layout || "",
-             isRepeater: data.isRepeater || false, // ✅ load from DB
+            isRepeater: data.isRepeater || false, // ✅ load from DB
           });
-             if (data.fieldsConfig && data.fieldsConfig.length > 0) {
+          if (data.fieldsConfig && data.fieldsConfig.length > 0) {
             setFields(
               data.fieldsConfig.map((f) => ({
                 title: f.title || "",
@@ -82,12 +86,12 @@ const Updatesectionmaster = () => {
   const handleInput = (e) => {
     setSectionMaster({ ...sectionmaster, [e.target.name]: e.target.value });
   };
-   // ✅ Checkbox handler
+  // ✅ Checkbox handler
   const handleCheckboxChange = (e) => {
     const { checked } = e.target;
     setSectionMaster((prev) => ({ ...prev, isRepeater: checked }));
   };
-   // Field change handler
+  // Field change handler
   const handleFieldChange = (index, e) => {
     const { name, value, type, checked } = e.target;
     const updatedFields = [...fields];
@@ -96,8 +100,8 @@ const Updatesectionmaster = () => {
     // Reset options if type is not select
     if (
       name === "type" &&
-     value !== "Single Select" &&
-    value !== "Multiple Select"
+      value !== "Single Select" &&
+      value !== "Multiple Select"
     ) {
       updatedFields[index].options = [""];
     }
@@ -139,13 +143,12 @@ const Updatesectionmaster = () => {
     setFields(updatedFields);
   };
 
-
   // ✅ Submit update
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
 
-  if (!sectionmaster.name) newErrors.name = "Name is required";
+    if (!sectionmaster.name) newErrors.name = "Name is required";
     if (!sectionmaster.slug) newErrors.slug = "Slug is required";
     if (!sectionmaster.layout) newErrors.layout = "Layout is required";
     if (Object.keys(newErrors).length > 0) {
@@ -156,23 +159,23 @@ const Updatesectionmaster = () => {
     try {
       const adminid = localStorage.getItem("adminid");
       const formData = new FormData();
- formData.append("name", sectionmaster.name);
+      formData.append("name", sectionmaster.name);
       formData.append("slug", sectionmaster.slug);
       formData.append("layout", sectionmaster.layout);
 
       // ✅ Include checkbox value as "1" or "0"
       formData.append("is_repeater", sectionmaster.isRepeater ? "1" : "0");
       formData.append("updatedBy", adminid);
-          formData.append("fieldsConfig", JSON.stringify(fields));
-
+      formData.append("fieldsConfig", JSON.stringify(fields));
 
       const res_data = await updatesectionmaster(id, formData);
 
       if (
-        res_data.success === false ||
-        res_data.msg === "sectionmaster already exist"
+        res_data?.success === false &&
+        res_data?.msg?.includes("already exist")
       ) {
-        toast.error(res_data.msg || "Failed to update sectionmaster");
+        toast.error(res_data.msg);
+        setErrors({ name: res_data.msg });
         return;
       }
 
@@ -245,8 +248,7 @@ Section Types Master"
                       )}
                     </Col>
 
-                 
-                 {/* ✅ Flag: Is Repeater Checkbox */}
+                    {/* ✅ Flag: Is Repeater Checkbox */}
                     <Col md="6" className="d-flex align-items-center mt-4">
                       <Label check>
                         <Input
@@ -262,7 +264,6 @@ Section Types Master"
                       </Label>
                     </Col>
                   </Row>
-
 
                   {/* 🧩 Fields Configuration Section */}
                   <hr />
@@ -298,9 +299,7 @@ Section Types Master"
                             <option value="date">Date</option>
                             <option value="url">URL (with Label)</option>
                             <option value="media">Media (Image/Video)</option>
-                            <option value="Single Select">
-                              Single Select
-                            </option>
+                            <option value="Single Select">Single Select</option>
                             <option value="Multiple Select">
                               Multiple Select
                             </option>
@@ -391,7 +390,7 @@ Section Types Master"
                   >
                     + Add More Field
                   </Button>
-<br></br>
+                  <br></br>
                   <Button color="primary" type="submit" className="mt-3 ms-2">
                     Update
                   </Button>

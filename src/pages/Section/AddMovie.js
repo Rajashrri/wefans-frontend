@@ -14,7 +14,11 @@ import "flatpickr/dist/themes/material_blue.css";
 import Flatpickr from "react-flatpickr";
 import Select from "react-select";
 import { toast } from "react-toastify";
-import { getLanguageOptions, addMoviev } from "../../api/movievApi";
+import {
+  getLanguageOptions,
+  addMoviev,
+  getGenreMaster,
+} from "../../api/movievApi";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
@@ -29,6 +33,7 @@ const AddMoviev = () => {
 
   const { id } = useParams(); // ✅ match route
   const celebrityId = id; // use it as celebrityId
+  const [optionscat, setOptions] = useState([]);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -45,10 +50,10 @@ const AddMoviev = () => {
     platform_rating: "",
     image: "",
     watchLinks: [], // ✅ NEW
-
+    genre: "",
     awards: "",
     sort: "",
-    statusnew: "",
+    statusnew: "Draft", // ✅ Default value
   });
 
   const [selectedFile, setSelectedFile] = useState(null);
@@ -57,6 +62,7 @@ const AddMoviev = () => {
 
   useEffect(() => {
     fetchLanguageOptions();
+    fetchOptions();
   }, []);
 
   const fetchLanguageOptions = async () => {
@@ -69,6 +75,21 @@ const AddMoviev = () => {
       setLanguageOptions(options);
     } catch (err) {
       console.error("Error fetching language options:", err);
+    }
+  };
+  // ✅ Fetch category options
+  const fetchOptions = async () => {
+    try {
+      const res_data = await getGenreMaster();
+      const options = Array.isArray(res_data.msg)
+        ? res_data.msg.map((item) => ({
+            value: item._id,
+            label: item.name?.trim() || item.name,
+          }))
+        : [];
+      setOptions(options);
+    } catch (error) {
+      console.error("Error fetching category options:", error);
     }
   };
 
@@ -131,6 +152,7 @@ const AddMoviev = () => {
       formDataToSend.append("role_type", formData.role_type);
       formDataToSend.append("languages", JSON.stringify(formData.languages));
       formDataToSend.append("watchLinks", JSON.stringify(formData.watchLinks));
+      formDataToSend.append("genre", formData.genre);
 
       formDataToSend.append("director", formData.director);
       formDataToSend.append("producer", formData.producer);
@@ -173,6 +195,8 @@ const AddMoviev = () => {
         cast: "",
         notes: "",
         rating: "",
+        statusnew: "Draft", // ✅ Default value
+        genre: "",
         platform_rating: "",
         image: "",
         watchLinks: [],
@@ -208,6 +232,34 @@ const AddMoviev = () => {
                         <span className="text-danger">{errors.title}</span>
                       )}
                     </Col>
+
+                    <Col md="6">
+                      <div className="mb-3">
+                        <Label className="form-label">Select Genre </Label>
+                        <Select
+                          options={optionscat}
+                          name="genre"
+                          value={
+                            optionscat.find(
+                              (option) => option.value === formData.genre
+                            ) || null
+                          }
+                          onChange={(selectedOption) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              genre: selectedOption ? selectedOption.value : "",
+                              name: selectedOption ? selectedOption.label : "",
+                            }));
+                          }}
+                          isClearable
+                          placeholder="Select Genre..."
+                        />
+                        {errors.genre && (
+                          <span className="text-danger">{errors.genre}</span>
+                        )}
+                      </div>
+                    </Col>
+
                     <Col md="6">
                       <Label>Release Year</Label>
                       <Input
@@ -313,6 +365,7 @@ const AddMoviev = () => {
                         type="text"
                       />
                     </Col>
+
                     <Col md="12">
                       <Label>Synopsis / Notes</Label>
                       <Input
@@ -398,7 +451,9 @@ const AddMoviev = () => {
                         value={formData.statusnew}
                       >
                         <option value="">Select</option>
-                        <option value="Draft">Draft </option>
+                        <option value="Draft" selected>
+                          Draft{" "}
+                        </option>
                         <option value="Published">Published </option>
                       </Input>
                     </Col>

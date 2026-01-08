@@ -264,54 +264,52 @@ const RoleMasterList = () => {
     setDeleteId(null);
   };
   //for datatable
-const fetchData = async () => {
-  try {
-    const result = await fetchLanguage();
-    setcategorylist(result.msg);
-  } catch (error) {
-    toast.error("Failed to load categories.");
-  }
-};
+  const fetchData = async () => {
+    try {
+      const result = await fetchLanguage();
+      setcategorylist(result.msg);
+    } catch (error) {
+      toast.error("Failed to load categories.");
+    }
+  };
 
-const handleChange = async (currentStatus, id) => {
-  const newStatus = currentStatus == 1 ? 0 : 1;
-  try {
-    await updateLanguageStatus(id, newStatus);
-    toast.success("Status updated successfully");
-    fetchData();
-  } catch (error) {
-    toast.error("Failed to update status");
-  }
-};
+  const handleChange = async (currentStatus, id) => {
+    const newStatus = currentStatus == 1 ? 0 : 1;
+    try {
+      await updateLanguageStatus(id, newStatus);
+      toast.success("Status updated successfully");
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to update status");
+    }
+  };
 
   const [itemIdToDelete, setItemIdToDelete] = useState(null);
 
   //for edit
- const handleedit = async (id) => {
-  try {
-    const data = await getLanguageById(id);
-    setcategory({ name: data.msg[0].name,code: data.msg[0].code });
-    setItemIdToDelete(data.msg[0]._id);
-    setModalOpen(true);
-  } catch (error) {
-    toast.error("Failed to load category data");
-  }
-};
-
+  const handleedit = async (id) => {
+    try {
+      const data = await getLanguageById(id);
+      setcategory({ name: data.msg[0].name, code: data.msg[0].code });
+      setItemIdToDelete(data.msg[0]._id);
+      setModalOpen(true);
+    } catch (error) {
+      toast.error("Failed to load category data");
+    }
+  };
 
   // 👇 Confirm delete function
- const handleyesno = async () => {
-  if (!deleteId) return toast.error("No ID to delete.");
-  try {
-    const data = await deleteLanguage(deleteId);
-    toast.success("Deleted successfully");
-    setModalOpen2(false);
-    fetchData();
-  } catch (error) {
-    toast.error("Delete failed");
-  }
-};
-
+  const handleyesno = async () => {
+    if (!deleteId) return toast.error("No ID to delete.");
+    try {
+      const data = await deleteLanguage(deleteId);
+      toast.success("Deleted successfully");
+      setModalOpen2(false);
+      fetchData();
+    } catch (error) {
+      toast.error("Delete failed");
+    }
+  };
 
   const handleStatusToggle = (id) => {
     setcategorylist((prevList) =>
@@ -332,9 +330,9 @@ const handleChange = async (currentStatus, id) => {
         Header: "No.",
         accessor: (_row, i) => i + 1,
       },
-{ Header: "Created Date", accessor: "createdAt" },
+      { Header: "Created Date", accessor: "createdAt" },
       { Header: "Name", accessor: "name" },
-    
+
       {
         Header: "Status",
         accessor: "status",
@@ -413,68 +411,72 @@ const handleChange = async (currentStatus, id) => {
 
   const [errors, setErrors] = useState({});
 
-const handleaddsubmit = async (e) => {
-  e.preventDefault();
+  const handleaddsubmit = async (e) => {
+    e.preventDefault();
 
-  // 🔸 Basic validation
-  if (!category.name) {
-    setErrors({ name: "Name is required" });
-    return;
-  }
-  if (!category.code) {
-    setErrors({ code: "Code is required" });
-    return;
-  }
-  try {
-    const adminid = localStorage.getItem("adminid");
-    const payload = { ...category, createdBy: adminid };
-    let res_data;
-
-    if (itemIdToDelete) {
-      // 🔸 Update existing category
-      res_data = await updateLanguage(itemIdToDelete, payload);
-
-      if (res_data.msg === "code already exist") {
-        setErrors({ name: res_data.msg });
-        toast.error(res_data.msg);
-        return;
-      }
-
-      if (res_data.success === false || res_data.error) {
-        toast.error(res_data.msg || "Update failed.");
-        return;
-      }
-
-      toast.success("Updated successfully");
-    } else {
-      // 🔸 Add new category
-      res_data = await addLanguage(payload);
-
-      if (res_data.msg === "code already exist") {
-        setErrors({ name: res_data.msg });
-        toast.error(res_data.msg);
-        return;
-      }
-
-      if (!res_data.success && res_data.error) {
-        toast.error(res_data.msg || "Add failed.");
-        return;
-      }
-
-      toast.success("Added successfully");
+    // 🔸 Basic validation
+    if (!category.name) {
+      setErrors({ name: "Name is required" });
+      return;
     }
+    if (!category.code) {
+      setErrors({ code: "Code is required" });
+      return;
+    }
+    try {
+      const adminid = localStorage.getItem("adminid");
+      const payload = { ...category, createdBy: adminid };
+      let res_data;
 
-    // 🔸 On success
-    handleClose1();
-    setcategory({ name: "" });
-    setErrors({});
-    fetchData();
-  } catch (error) {
-    console.error("Add/Update Category Error:", error);
-    toast.error("Something went wrong.");
-  }
-};
+      if (itemIdToDelete) {
+        // 🔸 Update existing category
+        res_data = await updateLanguage(itemIdToDelete, payload);
 
+        if (
+          res_data.success === false &&
+          res_data.msg.includes("already exist")
+        ) {
+          setErrors({ name: res_data.msg });
+          toast.error(res_data.msg);
+          return;
+        }
+        if (res_data.success === false || res_data.error) {
+          toast.error(res_data.msg || "Update failed.");
+          return;
+        }
+
+        toast.success("Updated successfully");
+      } else {
+        // 🔸 Add new category
+        res_data = await addLanguage(payload);
+
+        if (
+          res_data.success === false &&
+          res_data.msg.includes("already exist")
+        ) {
+          setErrors({ name: res_data.msg });
+          toast.error(res_data.msg);
+          return;
+        }
+
+        if (!res_data.success && res_data.error) {
+          toast.error(res_data.msg || "Add failed.");
+          return;
+        }
+
+        toast.success("Added successfully");
+      }
+
+      // 🔸 On success
+      handleClose1();
+      setcategory({ name: "" });
+      setErrors({});
+      fetchData();
+    } catch (error) {
+      console.error("Add/Update Category Error:", error);
+      toast.error("Something went wrong.");
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -484,7 +486,10 @@ const handleaddsubmit = async (e) => {
     <Fragment>
       <div className="page-content">
         <Container fluid>
-          <Breadcrumbs title="Language Master" breadcrumbItems={breadcrumbItems} />
+          <Breadcrumbs
+            title="Language Master"
+            breadcrumbItems={breadcrumbItems}
+          />
           <Card>
             <CardBody>
               <TableContainer
@@ -515,8 +520,8 @@ const handleaddsubmit = async (e) => {
               {errors.name && (
                 <span className="text-danger">{errors.name}</span>
               )}
-<br></br>
-               <Input
+              <br></br>
+              <Input
                 type="text"
                 value={category.code || ""}
                 onChange={handleinput}

@@ -13,6 +13,7 @@ import Breadcrumbs from "../../components/Common/Breadcrumb";
 import { toast } from "react-toastify";
 import { addtimeline } from "../../api/timelineApi";
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 const Addtimeline = () => {
   const [timeline, setTimeline] = useState({
@@ -26,6 +27,8 @@ const Addtimeline = () => {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
+  const { id } = useParams(); // ✅ match route
+  const celebrityId = id; // use it as celebrityId
   const breadcrumbItems = [
     { title: "Dashboard", link: "#" },
     { title: "Add Timeline", link: "#" },
@@ -57,9 +60,14 @@ const Addtimeline = () => {
 
     // ✅ Validation
     if (!timeline.title) newErrors.title = "Title is required";
-    if (!timeline.description) newErrors.description = "Description is required";
+    if (!timeline.description)
+      newErrors.description = "Description is required";
     if (!timeline.from_year) newErrors.from_year = "From year is required";
-    if (timeline.from_year && timeline.to_year && timeline.from_year > timeline.to_year) {
+    if (
+      timeline.from_year &&
+      timeline.to_year &&
+      timeline.from_year > timeline.to_year
+    ) {
       newErrors.to_year = "To year must be greater than or equal to From year";
     }
 
@@ -77,20 +85,22 @@ const Addtimeline = () => {
       formData.append("from_year", timeline.from_year);
       formData.append("to_year", timeline.to_year);
       formData.append("createdBy", adminid);
+      formData.append("celebrityId", celebrityId);
+
       if (timeline.media) formData.append("media", timeline.media);
 
       const res_data = await addtimeline(formData);
       console.log("API Response:", res_data);
 
-    if (res_data?.success === true) {
-  toast.success(res_data.msg || "Timeline added successfully!");
-  setErrors({});
-  navigate("/timeline-list");
-} else if (res_data?.msg === "timeline already exist") {
-  toast.error("Timeline already exists!");
-} else {
-  toast.error(res_data?.msg || "Failed to add timeline");
-}
+      if (res_data?.success === true) {
+        toast.success(res_data.msg || "Timeline added successfully!");
+        setErrors({});
+        navigate(`/timeline-list/${celebrityId}`);
+      } else if (res_data?.msg === "timeline already exist") {
+        toast.error("Timeline already exists!");
+      } else {
+        toast.error(res_data?.msg || "Failed to add timeline");
+      }
     } catch (error) {
       console.error("Add timeline Error:", error);
       toast.error("Something went wrong!");
@@ -190,15 +200,26 @@ const Addtimeline = () => {
                           rows="3"
                         />
                         {errors.description && (
-                          <span className="text-danger">{errors.description}</span>
+                          <span className="text-danger">
+                            {errors.description}
+                          </span>
                         )}
                       </div>
                     </Col>
                   </Row>
 
-                  <Button color="primary" type="submit" className="mt-3">
-                    Add
-                  </Button>
+                  <div className="d-flex gap-2 mt-3">
+                    <Button type="submit" color="primary">
+                      Add Timeline
+                    </Button>
+                    <Button
+                      type="button"
+                      color="secondary"
+                      onClick={() => navigate(`/timeline-list/${celebrityId}`)}
+                    >
+                      ← Back
+                    </Button>
+                  </div>
                 </form>
               </CardBody>
             </Card>

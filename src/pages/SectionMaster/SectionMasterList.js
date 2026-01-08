@@ -33,7 +33,11 @@ import {
 } from "../../api/sectionmasterApi";
 
 // 🔎 Global filter component
-function GlobalFilter({ preGlobalFilteredRows, globalFilter, setGlobalFilter }) {
+function GlobalFilter({
+  preGlobalFilteredRows,
+  globalFilter,
+  setGlobalFilter,
+}) {
   const count = preGlobalFilteredRows.length;
   const [value, setValue] = useState(globalFilter);
 
@@ -382,7 +386,7 @@ const SectionMasterList = () => {
       <div className="page-content">
         <Container fluid>
           <Breadcrumbs
-            title="Profession Master"
+            title="Section Type Master"
             breadcrumbItems={breadcrumbItems}
           />
           <Card>

@@ -73,7 +73,14 @@ export const updateSeries = async (id, formData) => {
   }
 };
 
-
+// ✅ Get Trivia Categories (for dropdown)
+export const getGenreMaster = async () => {
+  const response = await fetch(`${BASE_URL}/api/series/GenreMasterOptions`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  return response.json();
+};
 
 export const updateSeriesStatus = async (id, status) => {
   const response = await fetch(`${BASE_URL}/api/series/update-statusSeries`, {

@@ -28,12 +28,13 @@ const Updatetimeline = () => {
 
   const [errors, setErrors] = useState({});
   const { id } = useParams();
+  const [celebrityId, setCelebrityId] = useState("");
 
   const breadcrumbItems = [
     { title: "Dashboard", link: "#" },
     { title: "Update Profession Master", link: "#" },
   ];
- // Generate year options (1980 - current year + 5)
+  // Generate year options (1980 - current year + 5)
   const currentYear = new Date().getFullYear();
   const yearOptions = [];
   for (let y = 1980; y <= currentYear + 5; y++) {
@@ -54,6 +55,7 @@ const Updatetimeline = () => {
             to_year: data.to_year || "",
             old_image: data.media || "",
           });
+          setCelebrityId(data.celebrityId);
         } else {
           toast.error("timeline not found");
         }
@@ -114,7 +116,7 @@ const Updatetimeline = () => {
       }
 
       toast.success("timeline updated successfully!");
-      navigate("/timeline-list");
+      navigate(`/timeline-list/${celebrityId}`);
     } catch (error) {
       console.error("Update timeline Error:", error);
       toast.error("Something went wrong!");
@@ -234,9 +236,18 @@ Profession Master"
                     </Col>
                   </Row>
 
-                  <Button color="primary" type="submit" className="mt-3">
-                    Update
-                  </Button>
+                  <div className="d-flex gap-2 mt-3">
+                    <Button type="submit" color="primary">
+                      Update Timeline
+                    </Button>
+                    <Button
+                      type="button"
+                      color="secondary"
+                      onClick={() => navigate(`/timeline-list/${celebrityId}`)}
+                    >
+                      ← Back
+                    </Button>
+                  </div>
                 </form>
               </CardBody>
             </Card>

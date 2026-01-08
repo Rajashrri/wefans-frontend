@@ -31,7 +31,7 @@ const AddPositions = () => {
   const celebrityId = id; // use it as celebrityId
 
   const [formData, setFormData] = useState({
-     title: "",
+    title: "",
     department: "",
     level: "",
     from_date: "",
@@ -44,9 +44,8 @@ const AddPositions = () => {
     work: "",
     reference: [],
     sort: "",
-    statusnew: "",
+    statusnew: "Draft", // ✅ Default value
     image: "",
-    
   });
 
   const [selectedFile, setSelectedFile] = useState(null);
@@ -132,7 +131,7 @@ const AddPositions = () => {
     e.preventDefault();
 
     const newErrors = {};
-     if (!formData.title)
+    if (!formData.title)
       if (!formData.title) newErrors.title = "Position Title is required";
 
     if (Object.keys(newErrors).length > 0) {
@@ -158,7 +157,7 @@ const AddPositions = () => {
       formDataToSend.append("reference", JSON.stringify(formData.reference));
       formDataToSend.append("sort", formData.sort);
       formDataToSend.append("statusnew", formData.statusnew);
-            formDataToSend.append("celebrityId", celebrityId);
+      formDataToSend.append("celebrityId", celebrityId);
 
       if (selectedFile) {
         formDataToSend.append("image", selectedFile);
@@ -180,7 +179,7 @@ const AddPositions = () => {
 
       // Reset form
       setFormData({
-         title: "",
+        title: "",
         department: "",
         level: "",
         from_date: "",
@@ -193,7 +192,7 @@ const AddPositions = () => {
         work: "",
         reference: [],
         sort: "",
-        statusnew: "",
+        statusnew: "Draft", // ✅ Default value
       });
       setSelectedFile(null);
       setErrors({});
@@ -223,12 +222,9 @@ const AddPositions = () => {
                         type="text"
                       />
                       {errors.title && (
-                        <span className="text-danger">
-                          {errors.title}
-                        </span>
+                        <span className="text-danger">{errors.title}</span>
                       )}
                     </Col>
-
 
                     <Col md="6">
                       <Label>Department / Ministry </Label>
@@ -250,16 +246,12 @@ const AddPositions = () => {
                       >
                         <option value="">Select</option>
                         <option value="Central">Central </option>
-                        <option value="State">State  </option>
+                        <option value="State">State </option>
 
-                        <option value="Local">Local  </option>
+                        <option value="Local">Local </option>
                         <option value="Party">Party </option>
-
-                       
                       </Input>
-                      
                     </Col>
-                    
 
                     <Col md="6">
                       <Label>From Date </Label>
@@ -281,7 +273,7 @@ const AddPositions = () => {
                         type="date"
                       />
                     </Col>
- <Col md="6">
+                    <Col md="6">
                       <Label>Is Current </Label>
                       <Input
                         name="current"
@@ -292,9 +284,8 @@ const AddPositions = () => {
                       />
                     </Col>
 
-
-                      <Col md="6">
-                      <Label>State  </Label>
+                    <Col md="6">
+                      <Label>State </Label>
                       <Input
                         name="state"
                         value={formData.state}
@@ -304,8 +295,7 @@ const AddPositions = () => {
                       />
                     </Col>
 
-
-                      <Col md="6">
+                    <Col md="6">
                       <Label>Constituency / Region </Label>
                       <Input
                         name="constituency"
@@ -316,7 +306,7 @@ const AddPositions = () => {
                       />
                     </Col>
 
-                       <Col md="6">
+                    <Col md="6">
                       <Label>Party / Affiliation </Label>
                       <Input
                         name="party"
@@ -327,7 +317,7 @@ const AddPositions = () => {
                       />
                     </Col>
 
-<Col md="6">
+                    <Col md="6">
                       <Label>Reporting To / Under </Label>
                       <Input
                         name="reporting"
@@ -337,12 +327,6 @@ const AddPositions = () => {
                         type="text"
                       />
                     </Col>
-
-               
-                   
-
-                  
-                  
 
                     <Col md="12">
                       <Label>Major Work / Achievements </Label>

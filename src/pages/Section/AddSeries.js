@@ -14,7 +14,11 @@ import "flatpickr/dist/themes/material_blue.css";
 import Flatpickr from "react-flatpickr";
 import Select from "react-select";
 import { toast } from "react-toastify";
-import { getLanguageOptions, addSeries } from "../../api/seriesApi";
+import {
+  getLanguageOptions,
+  addSeries,
+  getGenreMaster,
+} from "../../api/seriesApi";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
@@ -29,6 +33,7 @@ const AddSeries = () => {
 
   const { id } = useParams(); // ✅ match route
   const celebrityId = id; // use it as celebrityId
+  const [optionscat, setOptions] = useState([]);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -42,13 +47,13 @@ const AddSeries = () => {
     role_type: "",
     director: "",
     notes: "",
-
+    genre: "",
     image: "",
     watchLinks: [], // ✅ NEW
     seasons: [], // ✅ new field
 
     sort: "",
-    statusnew: "",
+    statusnew: "Draft", // ✅ Default value
   });
 
   const [selectedFile, setSelectedFile] = useState(null);
@@ -57,7 +62,23 @@ const AddSeries = () => {
 
   useEffect(() => {
     fetchLanguageOptions();
+    fetchOptions();
   }, []);
+  // ✅ Fetch category options
+  const fetchOptions = async () => {
+    try {
+      const res_data = await getGenreMaster();
+      const options = Array.isArray(res_data.msg)
+        ? res_data.msg.map((item) => ({
+            value: item._id,
+            label: item.name?.trim() || item.name,
+          }))
+        : [];
+      setOptions(options);
+    } catch (error) {
+      console.error("Error fetching category options:", error);
+    }
+  };
 
   const fetchLanguageOptions = async () => {
     try {
@@ -154,7 +175,7 @@ const AddSeries = () => {
       formDataToSend.append("languages", JSON.stringify(formData.languages));
       formDataToSend.append("watchLinks", JSON.stringify(formData.watchLinks));
       formDataToSend.append("seasons", JSON.stringify(formData.seasons));
-
+      formDataToSend.append("genre", formData.genre);
       formDataToSend.append("director", formData.director);
       formDataToSend.append("end_year", formData.end_year);
       formDataToSend.append("platform", formData.platform);
@@ -197,7 +218,9 @@ const AddSeries = () => {
         platform: "",
         statusnew: "",
         statusseries: "",
+        genre: "",
         sort: "",
+        statusnew: "Draft", // ✅ Default value
       });
       setSelectedFile(null);
       setErrors({});
@@ -229,6 +252,32 @@ const AddSeries = () => {
                       {errors.title && (
                         <span className="text-danger">{errors.title}</span>
                       )}
+                    </Col>
+                    <Col md="6">
+                      <div className="mb-3">
+                        <Label className="form-label">Select Genre </Label>
+                        <Select
+                          options={optionscat}
+                          name="genre"
+                          value={
+                            optionscat.find(
+                              (option) => option.value === formData.genre
+                            ) || null
+                          }
+                          onChange={(selectedOption) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              genre: selectedOption ? selectedOption.value : "",
+                              name: selectedOption ? selectedOption.label : "",
+                            }));
+                          }}
+                          isClearable
+                          placeholder="Select Genre..."
+                        />
+                        {errors.genre && (
+                          <span className="text-danger">{errors.genre}</span>
+                        )}
+                      </div>
                     </Col>
                     <Col md="6">
                       <Label>Series Type</Label>

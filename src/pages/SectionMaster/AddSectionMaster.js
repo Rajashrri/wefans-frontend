@@ -130,10 +130,14 @@ const Addsectionmaster = () => {
         );
         setErrors({});
         navigate("/sectionmaster-list");
-      } else if (res_data?.msg === "sectionmaster already exist") {
-        toast.error("SectionMaster already exists!");
-      } else {
-        toast.error(res_data?.msg || "Failed to add sectionmaster");
+      }
+      if (
+        res_data?.success === false &&
+        res_data?.msg?.includes("already exist")
+      ) {
+        toast.error(res_data.msg);
+        setErrors({ name: res_data.msg });
+        return;
       }
     } catch (error) {
       console.error("Add sectionmaster Error:", error);

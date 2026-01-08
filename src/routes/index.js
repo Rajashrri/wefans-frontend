@@ -118,6 +118,7 @@ import TriviaTypesList from "../pages/TriviaTypes/TriviaTypesList";
 import SectionTemplateList from "../pages/SectionTemplate/SectionTemplateList";
 
 import SocialLinkList from "../pages/SocialLink/SocialLinkList";
+import GenreMasterList from "../pages/GenreMaster/GenreMasterList";
 
 import CelebratyList from "../pages/Celebraty/CelebratyList";
 import AddCelebraty from "../pages/Celebraty/AddCelebraty";
@@ -257,6 +258,16 @@ const authProtectedRoutes = [
   { path: "/list-movie/:id", component: <ListMoviev /> },
   { path: "/update-movie/:id", component: <UpdateMoviev /> },
 
+
+  { path: "/timeline-list/:id", component: <Timelinelist /> },
+  { path: "/add-timeline/:id", component: <AddTimeline /> },
+  { path: "/update-timeline/:id", component: <UpdateTimeline /> },
+
+
+  { path: "/triviaentries-list/:id", component: <TriviaentriesList /> },
+  { path: "/add-triviaentries/:id", component: <CreateTriviaentries /> },
+  { path: "/update-triviaentries/:id", component: <UpdateTriviaentries /> },
+
   { path: "/add-series/:id", component: <AddSeries /> },
   { path: "/list-series/:id", component: <ListSeries /> },
   { path: "/update-series/:id", component: <UpdateSeries /> },
@@ -271,9 +282,8 @@ const authProtectedRoutes = [
   { path: "/update-positions/:id", component: <UpdatePositions /> },
 
   { path: "/sociallink-list", component: <SocialLinkList /> },
-  { path: "/timeline-list", component: <Timelinelist /> },
-  { path: "/add-timeline", component: <AddTimeline /> },
-  { path: "/update-timeline/:id", component: <UpdateTimeline /> },
+
+  { path: "/genremaster-list", component: <GenreMasterList /> },
 
 
    { path: "/sectionmaster-list", component: <SectionMasterList /> },

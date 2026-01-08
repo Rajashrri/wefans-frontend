@@ -160,18 +160,15 @@ const { privileges, roleName } = this.state;
                 <i className="mdi mdi-account-key-outline"></i> 
                 <span className="ms-1">{this.props.t('Social Links ')}</span>
               </Link>
+                <Link to="/genremaster-list" className="waves-effect">
+                <i className="mdi mdi-account-key-outline"></i> 
+                <span className="ms-1">{this.props.t('Genre Master')}</span>
+              </Link>
                <Link to="/celebrity-list" className="waves-effect">
                 <i className="mdi mdi-account-key-outline"></i> 
                 <span className="ms-1">{this.props.t('Celebrity ')}</span>
               </Link>
-               <Link to="/timeline-list" className="waves-effect">
-                <i className="mdi mdi-account-key-outline"></i> 
-                <span className="ms-1">{this.props.t('Timeline Entries ')}</span>
-              </Link>
-               <Link to="/triviaentries-list" className="waves-effect">
-                <i className="mdi mdi-account-key-outline"></i> 
-                <span className="ms-1">{this.props.t('Trivia Entries ')}</span>
-              </Link>
+              
                <Link to="/sectionmaster-list" className="waves-effect">
                 <i className="mdi mdi-account-key-outline"></i> 
                 <span className="ms-1">{this.props.t('Section Types Master ')}</span>

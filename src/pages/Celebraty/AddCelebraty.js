@@ -17,7 +17,8 @@ import { toast } from "react-toastify";
 import {
   getLanguageOptions,
   getProfessionsOptions,
-  addCelebraty,getSocialLinksOptions,
+  addCelebraty,
+  getSocialLinksOptions,
 } from "../../api/celebratyApi";
 import { useNavigate } from "react-router-dom";
 
@@ -30,7 +31,7 @@ const AddCelebraty = () => {
   ]);
   const [galleryFiles, setGalleryFiles] = useState([]);
   const navigate = useNavigate();
-const [socialLinksOptions, setSocialLinksOptions] = useState([]);
+  const [socialLinksOptions, setSocialLinksOptions] = useState([]);
 
   const onDrop = (acceptedFiles) => {
     setGalleryFiles((prev) => [...prev, ...acceptedFiles]);
@@ -49,7 +50,7 @@ const [socialLinksOptions, setSocialLinksOptions] = useState([]);
     image: "",
     languages: [], // ✅ initialize as empty arrays
     professions: [], // ✅ initialize as empty arrays
-    statusnew: "",
+    statusnew: "Draft", // ✅ Default value
     socialLinks: [], // ✅ added
   });
 
@@ -61,23 +62,22 @@ const [socialLinksOptions, setSocialLinksOptions] = useState([]);
   useEffect(() => {
     fetchLanguageOptions();
     fetchProfessionsOptions();
-      fetchSocialLinksOptions(); // ✅ added
-
+    fetchSocialLinksOptions(); // ✅ added
   }, []);
 
   const fetchSocialLinksOptions = async () => {
-  try {
-    const data = await getSocialLinksOptions();
-    const options = (data.msg || []).map((item) => ({
-      value: item._id,
-      label: item.name?.trim() || item.name,
-      url: item.url || "",
-    }));
-    setSocialLinksOptions(options);
-  } catch (err) {
-    console.error("Error fetching social link options:", err);
-  }
-};
+    try {
+      const data = await getSocialLinksOptions();
+      const options = (data.msg || []).map((item) => ({
+        value: item._id,
+        label: item.name?.trim() || item.name,
+        url: item.url || "",
+      }));
+      setSocialLinksOptions(options);
+    } catch (err) {
+      console.error("Error fetching social link options:", err);
+    }
+  };
   const fetchLanguageOptions = async () => {
     try {
       const data = await getLanguageOptions();
@@ -88,6 +88,37 @@ const [socialLinksOptions, setSocialLinksOptions] = useState([]);
       setLanguageOptions(options);
     } catch (err) {
       console.error("Error fetching language options:", err);
+    }
+  };
+
+  const isValidSocialUrl = (url) => {
+    if (!url || url.trim() === "") return true; // optional field = valid
+
+    // Must start with www. or have http/https and www.
+    const pattern = /^(https?:\/\/)?(www\.)[a-zA-Z0-9_-]+(\.[a-z]{2,})(\/.*)?$/;
+    return pattern.test(url.trim());
+  };
+
+  const validateAndFormatUrl = (inputUrl) => {
+    if (!inputUrl) return ""; // Empty allowed
+
+    let url = inputUrl.trim();
+
+    // Auto prepend https:// if user starts with "www."
+    if (url.startsWith("www.")) {
+      url = "https://" + url;
+    }
+
+    // Auto prepend https:// if missing protocol
+    if (!/^https?:\/\//i.test(url)) {
+      url = "https://" + url;
+    }
+
+    try {
+      new URL(url); // will throw if invalid
+      return url;
+    } catch (e) {
+      return null; // invalid URL
     }
   };
 
@@ -145,7 +176,10 @@ const [socialLinksOptions, setSocialLinksOptions] = useState([]);
       formDataToSend.append("shortinfo", formData.shortinfo);
       formDataToSend.append("biography", formData.biography);
       formDataToSend.append("statusnew", formData.statusnew);
-formDataToSend.append("socialLinks", JSON.stringify(formData.socialLinks));
+      formDataToSend.append(
+        "socialLinks",
+        JSON.stringify(formData.socialLinks)
+      );
 
       formDataToSend.append(
         "professions",
@@ -175,7 +209,7 @@ formDataToSend.append("socialLinks", JSON.stringify(formData.socialLinks));
       }
 
       toast.success("Celebraty Added Successfully");
-navigate("/celebrity-list");
+      navigate("/celebrity-list");
       // Reset form
       setFormData({
         name: "",
@@ -185,7 +219,7 @@ navigate("/celebrity-list");
         image: "",
         languages: [],
         professions: [],
-        statusnew: "",
+        statusnew: "Draft", // ✅ Default value
       });
       setSelectedFile(null);
       setGalleryFiles([]);
@@ -243,15 +277,15 @@ navigate("/celebrity-list");
                           onChange={handleFileChange}
                         />
                         {formData.old_image && (
-                        <div className="mt-2">
-                          <img
-                            src={`${process.env.REACT_APP_API_BASE_URL}/celebraty/${formData.old_image}`}
-                            alt="Main"
-                            width="100"
-                            className="rounded border"
-                          />
-                        </div>
-                      )}
+                          <div className="mt-2">
+                            <img
+                              src={`${process.env.REACT_APP_API_BASE_URL}/celebraty/${formData.old_image}`}
+                              alt="Main"
+                              width="100"
+                              className="rounded border"
+                            />
+                          </div>
+                        )}
                       </div>
                     </Col>
 
@@ -425,67 +459,115 @@ navigate("/celebrity-list");
                       )}
                     </Col>
 
-<Col md="12" className="mt-3">
-  <Label>Social Links</Label>
-  {formData.socialLinks.map((item, index) => (
-    <Row key={index} className="align-items-center mb-2">
-      <Col md="4">
-        <Select
-          options={socialLinksOptions}
-          value={socialLinksOptions.find((opt) => opt.value === item.platform)}
-          onChange={(selected) => {
-            const updated = [...formData.socialLinks];
-            updated[index].platform = selected.value;
-            updated[index].name = selected.label;
-            updated[index].url = selected.url;
-            setFormData((prev) => ({ ...prev, socialLinks: updated }));
-          }}
-          placeholder="Select Social Platform"
-        />
-      </Col>
-      <Col md="6">
-        <Input
-          type="text"
-          placeholder="Enter custom URL (optional)"
-          value={item.customUrl || ""}
-          onChange={(e) => {
-            const updated = [...formData.socialLinks];
-            updated[index].customUrl = e.target.value;
-            setFormData((prev) => ({ ...prev, socialLinks: updated }));
-          }}
-        />
-      </Col>
-      <Col md="2">
-        <Button
-          color="danger"
-          type="button"
-          onClick={() => {
-            const updated = formData.socialLinks.filter((_, i) => i !== index);
-            setFormData((prev) => ({ ...prev, socialLinks: updated }));
-          }}
-        >
-          ×
-        </Button>
-      </Col>
-    </Row>
-  ))}
+                    <Col md="12" className="mt-3">
+                      <Label>Social Links</Label>
+                      {formData.socialLinks.map((item, index) => (
+                        <Row key={index} className="align-items-center mb-2">
+                          <Col md="4">
+                            <Select
+                              options={socialLinksOptions}
+                              value={socialLinksOptions.find(
+                                (opt) => opt.value === item.platform
+                              )}
+                              onChange={(selected) => {
+                                const updated = [...formData.socialLinks];
+                                updated[index].platform = selected.value;
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  socialLinks: updated,
+                                }));
+                              }}
+                              placeholder="Select Social Platform"
+                            />
+                          </Col>
 
-  <Button
-    color="secondary"
-    type="button"
-    onClick={() =>
-      setFormData((prev) => ({
-        ...prev,
-        socialLinks: [...prev.socialLinks, { platform: "", customUrl: "" }],
-      }))
-    }
-  >
-    + Add Social Link
-  </Button>
-</Col>
+                          <Col md="6">
+                            <Input
+                              type="text"
+                              placeholder="Enter custom URL (e.g. www.facebook.com)"
+                              value={item.customUrl || ""}
+                              onChange={(e) => {
+                                const updated = [...formData.socialLinks];
+                                updated[index].customUrl = e.target.value;
 
+                                // ✅ Real-time validation
+                                const urlValid = isValidSocialUrl(
+                                  e.target.value
+                                );
+                                const newErrors = [
+                                  ...(errors.socialLinks || []),
+                                ];
+                                newErrors[index] = urlValid
+                                  ? "" // ✅ Clear error
+                                  : "Please enter a valid URL starting with www.";
 
+                                setErrors((prev) => ({
+                                  ...prev,
+                                  socialLinks: newErrors,
+                                }));
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  socialLinks: updated,
+                                }));
+                              }}
+                            />
+                            {/* ✅ Inline error message */}
+                            {errors.socialLinks?.[index] && (
+                              <div
+                                style={{
+                                  color: "red",
+                                  fontSize: "0.8rem",
+                                  marginTop: "4px",
+                                }}
+                              >
+                                {errors.socialLinks[index]}
+                              </div>
+                            )}
+                          </Col>
 
+                          <Col md="2">
+                            <Button
+                              color="danger"
+                              type="button"
+                              onClick={() => {
+                                const updated = formData.socialLinks.filter(
+                                  (_, i) => i !== index
+                                );
+                                const updatedErrors = (
+                                  errors.socialLinks || []
+                                ).filter((_, i) => i !== index);
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  socialLinks: updated,
+                                }));
+                                setErrors((prev) => ({
+                                  ...prev,
+                                  socialLinks: updatedErrors,
+                                }));
+                              }}
+                            >
+                              ×
+                            </Button>
+                          </Col>
+                        </Row>
+                      ))}
+
+                      <Button
+                        color="secondary"
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            socialLinks: [
+                              ...prev.socialLinks,
+                              { platform: "", customUrl: "" },
+                            ],
+                          }))
+                        }
+                      >
+                        + Add Social Link
+                      </Button>
+                    </Col>
                   </Row>
 
                   <Button type="submit" color="primary" className="mt-3">

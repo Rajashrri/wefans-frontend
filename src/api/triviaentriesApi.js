@@ -20,8 +20,8 @@ export const gettriviaentriesCategories = async () => {
 };
 
 // ✅ Get all Trivia Entries (for list page)
-export const getTriviaentries = async () => {
-  const response = await fetch(`${BASE_URL}/api/triviaentries/getdatatriviaentries`);
+export const getTriviaentries = async (id) => {
+  const response = await fetch(`${BASE_URL}/api/triviaentries/getdatatriviaentries/${id}`);
   return response.json();
 };
 

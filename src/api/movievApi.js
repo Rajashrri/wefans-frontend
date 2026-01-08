@@ -74,6 +74,14 @@ export const updateMoviev = async (id, formData) => {
 };
 
 
+// ✅ Get Trivia Categories (for dropdown)
+export const getGenreMaster = async () => {
+  const response = await fetch(`${BASE_URL}/api/Moviev/GenreMasterOptions`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  return response.json();
+};
 
 export const updateMovieStatus = async (id, status) => {
   const response = await fetch(`${BASE_URL}/api/Moviev/update-statusMoviev`, {

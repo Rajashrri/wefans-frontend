@@ -16,7 +16,8 @@ import {
   addtriviaentries,
   gettriviaentriesCategories,
 } from "../../api/triviaentriesApi";
-
+import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 const AddTriviaEntries = () => {
   const [breadcrumbItems] = useState([
     { title: "Dashboard", link: "/" },
@@ -33,7 +34,10 @@ const AddTriviaEntries = () => {
     source_link: "",
   });
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
+  const { id } = useParams(); // ✅ match route
+  const celebrityId = id; // use it as celebrityId
   const handleInput = (e) => {
     const { name, value } = e.target;
     setTrivia((prev) => ({ ...prev, [name]: value }));
@@ -67,6 +71,7 @@ const AddTriviaEntries = () => {
       formData.append("description", trivia.description);
       formData.append("source_link", trivia.source_link);
       formData.append("createdBy", adminid);
+      formData.append("celebrityId", celebrityId);
       if (trivia.media) formData.append("media", trivia.media);
 
       const res_data = await addtriviaentries(formData);
@@ -78,6 +83,7 @@ const AddTriviaEntries = () => {
 
       toast.success("Trivia Entry added successfully!");
       setErrors({});
+      navigate(`/triviaentries-list/${celebrityId}`);
       setTrivia({
         category_id: "",
         category_name: "",
@@ -231,10 +237,20 @@ const AddTriviaEntries = () => {
                         </div>
                       </Col>
                     </Row>
-
-                    <Button color="primary" type="submit">
-                      Add Trivia Entry
-                    </Button>
+                    <div className="d-flex gap-2 mt-3">
+                      <Button type="submit" color="primary">
+                        Add Trivia Entry
+                      </Button>
+                      <Button
+                        type="button"
+                        color="secondary"
+                        onClick={() =>
+                          navigate(`/triviaentries-list/${celebrityId}`)
+                        }
+                      >
+                        ← Back
+                      </Button>
+                    </div>
                   </form>
                 </CardBody>
               </Card>

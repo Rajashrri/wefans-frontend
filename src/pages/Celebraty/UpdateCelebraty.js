@@ -18,7 +18,7 @@ import {
   updateCelebraty,
   getLanguageOptions,
   getProfessionsOptions,
-  getSocialLinksOptions
+  getSocialLinksOptions,
 } from "../../api/celebratyApi";
 import { useDropzone } from "react-dropzone";
 
@@ -92,8 +92,7 @@ const UpdateCelebraty = () => {
     fetchCelebratyById();
     fetchLanguageOptions();
     fetchProfessionsOptions();
-        fetchSocialLinksOptions();
-
+    fetchSocialLinksOptions();
   }, [id]);
 
   // 📌 Fetch dropdowns
@@ -122,7 +121,7 @@ const UpdateCelebraty = () => {
       console.error("Error fetching profession options:", err);
     }
   };
-const fetchSocialLinksOptions = async () => {
+  const fetchSocialLinksOptions = async () => {
     try {
       const data = await getSocialLinksOptions();
       const options = (data.msg || []).map((item) => ({
@@ -143,6 +142,13 @@ const fetchSocialLinksOptions = async () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) setSelectedFile(file);
+  };
+  const isValidSocialUrl = (url) => {
+    if (!url || url.trim() === "") return true; // empty allowed
+
+    // Must start with www. or include https://www.
+    const pattern = /^(https?:\/\/)?(www\.)[a-zA-Z0-9_-]+(\.[a-z]{2,})(\/.*)?$/;
+    return pattern.test(url.trim());
   };
 
   // 📌 Submit form
@@ -177,7 +183,10 @@ const fetchSocialLinksOptions = async () => {
         JSON.stringify(formData.professions)
       );
       formDataToSend.append("languages", JSON.stringify(formData.languages));
-      formDataToSend.append("socialLinks", JSON.stringify(formData.socialLinks));
+      formDataToSend.append(
+        "socialLinks",
+        JSON.stringify(formData.socialLinks)
+      );
 
       if (selectedFile) formDataToSend.append("image", selectedFile);
 
@@ -210,7 +219,10 @@ const fetchSocialLinksOptions = async () => {
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="UPDATE Celebraty" breadcrumbItems={breadcrumbItems} />
+        <Breadcrumbs
+          title="UPDATE Celebraty"
+          breadcrumbItems={breadcrumbItems}
+        />
         <Row>
           <Col xl="12">
             <Card>
@@ -227,7 +239,9 @@ const fetchSocialLinksOptions = async () => {
                         placeholder="Name"
                         type="text"
                       />
-                      {errors.name && <span className="text-danger">{errors.name}</span>}
+                      {errors.name && (
+                        <span className="text-danger">{errors.name}</span>
+                      )}
                     </Col>
 
                     {/* SLUG */}
@@ -240,13 +254,20 @@ const fetchSocialLinksOptions = async () => {
                         placeholder="Slug"
                         type="text"
                       />
-                      {errors.slug && <span className="text-danger">{errors.slug}</span>}
+                      {errors.slug && (
+                        <span className="text-danger">{errors.slug}</span>
+                      )}
                     </Col>
 
                     {/* PROFILE IMAGE */}
                     <Col md="6">
                       <Label>Profile Image</Label>
-                      <Input type="file" name="image" accept="image/*" onChange={handleFileChange} />
+                      <Input
+                        type="file"
+                        name="image"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                      />
                       {formData.old_image && (
                         <div className="mt-2">
                           <img
@@ -271,10 +292,13 @@ const fetchSocialLinksOptions = async () => {
                       >
                         <input {...getInputProps()} />
                         {isDragActive ? (
-                          <p className="mb-0 text-primary fw-bold">Drop images here...</p>
+                          <p className="mb-0 text-primary fw-bold">
+                            Drop images here...
+                          </p>
                         ) : (
                           <p className="mb-0 text-muted">
-                            Drag & drop images here, or <strong>click to select</strong>
+                            Drag & drop images here, or{" "}
+                            <strong>click to select</strong>
                           </p>
                         )}
                       </div>
@@ -283,7 +307,11 @@ const fetchSocialLinksOptions = async () => {
                       {oldGallery.length > 0 && (
                         <div className="mt-3 d-flex flex-wrap gap-3">
                           {oldGallery.map((file, idx) => (
-                            <div key={`old-${idx}`} className="position-relative" style={{ width: 100, height: 100 }}>
+                            <div
+                              key={`old-${idx}`}
+                              className="position-relative"
+                              style={{ width: 100, height: 100 }}
+                            >
                               <img
                                 src={`${process.env.REACT_APP_API_BASE_URL}/celebraty/${file}`}
                                 alt={`gallery-${idx}`}
@@ -298,7 +326,9 @@ const fetchSocialLinksOptions = async () => {
                               <button
                                 type="button"
                                 onClick={() =>
-                                  setOldGallery((prev) => prev.filter((_, i) => i !== idx))
+                                  setOldGallery((prev) =>
+                                    prev.filter((_, i) => i !== idx)
+                                  )
                                 }
                                 style={{
                                   position: "absolute",
@@ -324,7 +354,11 @@ const fetchSocialLinksOptions = async () => {
                       {galleryFiles.length > 0 && (
                         <div className="mt-3 d-flex flex-wrap gap-3">
                           {galleryFiles.map((file, idx) => (
-                            <div key={`new-${idx}`} className="position-relative" style={{ width: 100, height: 100 }}>
+                            <div
+                              key={`new-${idx}`}
+                              className="position-relative"
+                              style={{ width: 100, height: 100 }}
+                            >
                               <img
                                 src={URL.createObjectURL(file)}
                                 alt={`gallery-${idx}`}
@@ -340,7 +374,9 @@ const fetchSocialLinksOptions = async () => {
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setGalleryFiles((prev) => prev.filter((_, i) => i !== idx));
+                                  setGalleryFiles((prev) =>
+                                    prev.filter((_, i) => i !== idx)
+                                  );
                                 }}
                                 style={{
                                   position: "absolute",
@@ -438,12 +474,13 @@ const fetchSocialLinksOptions = async () => {
                       </Input>
                     </Col>
 
-
-                     {/* ✅ SOCIAL LINKS */}
+                    {/* ✅ SOCIAL LINKS */}
                     <Col md="12" className="mt-3">
                       <Label>Social Links</Label>
+
                       {formData.socialLinks.map((item, index) => (
                         <Row key={index} className="align-items-center mb-2">
+                          {/* Select Social Platform */}
                           <Col md="4">
                             <Select
                               options={socialLinksOptions}
@@ -463,21 +500,53 @@ const fetchSocialLinksOptions = async () => {
                               placeholder="Select Social Platform"
                             />
                           </Col>
+
+                          {/* URL Input with Validation */}
                           <Col md="6">
                             <Input
                               type="text"
-                              placeholder="Enter custom URL (optional)"
+                              placeholder="Enter custom URL (e.g. www.facebook.com)"
                               value={item.customUrl || ""}
                               onChange={(e) => {
+                                const value = e.target.value;
                                 const updated = [...formData.socialLinks];
-                                updated[index].customUrl = e.target.value;
+                                updated[index].customUrl = value;
+
+                                // ✅ Validate on change
+                                const newErrors = [
+                                  ...(errors.socialLinks || []),
+                                ];
+                                newErrors[index] = isValidSocialUrl(value)
+                                  ? ""
+                                  : "Please enter a valid URL starting with www.";
+
+                                setErrors((prev) => ({
+                                  ...prev,
+                                  socialLinks: newErrors,
+                                }));
+
                                 setFormData((prev) => ({
                                   ...prev,
                                   socialLinks: updated,
                                 }));
                               }}
                             />
+
+                            {/* Inline Error */}
+                            {errors.socialLinks?.[index] && (
+                              <div
+                                style={{
+                                  color: "red",
+                                  fontSize: "0.8rem",
+                                  marginTop: "4px",
+                                }}
+                              >
+                                {errors.socialLinks[index]}
+                              </div>
+                            )}
                           </Col>
+
+                          {/* Remove Button */}
                           <Col md="2">
                             <Button
                               color="danger"
@@ -486,9 +555,16 @@ const fetchSocialLinksOptions = async () => {
                                 const updated = formData.socialLinks.filter(
                                   (_, i) => i !== index
                                 );
+                                const updatedErrors = (
+                                  errors.socialLinks || []
+                                ).filter((_, i) => i !== index);
                                 setFormData((prev) => ({
                                   ...prev,
                                   socialLinks: updated,
+                                }));
+                                setErrors((prev) => ({
+                                  ...prev,
+                                  socialLinks: updatedErrors,
                                 }));
                               }}
                             >
@@ -497,6 +573,8 @@ const fetchSocialLinksOptions = async () => {
                           </Col>
                         </Row>
                       ))}
+
+                      {/* Add New Social Link */}
                       <Button
                         color="secondary"
                         type="button"
