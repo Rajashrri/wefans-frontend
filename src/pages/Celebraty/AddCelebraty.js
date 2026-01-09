@@ -136,7 +136,25 @@ const AddCelebraty = () => {
   };
   const handleInput = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "name") {
+      const generatedSlug = value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-") // replace non-alphanumeric with hyphen
+        .replace(/^-+|-+$/g, ""); // remove leading/trailing hyphens
+
+      setFormData((prev) => ({
+        ...prev,
+        name: value,
+        slug: generatedSlug, // auto-fill slug from name
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handleDateChange = (selectedDates, name) => {
@@ -162,7 +180,6 @@ const AddCelebraty = () => {
     if (!formData.languages?.length)
       newErrors.languages = "Languages are required";
     if (!formData.statusnew) newErrors.statusnew = "Status is required"; // ✅ fixed typo (was ststusnew)
-    if (!selectedFile) newErrors.image = "Image is required";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -220,6 +237,7 @@ const AddCelebraty = () => {
         languages: [],
         professions: [],
         statusnew: "Draft", // ✅ Default value
+        previewImage: "", // ✅ clear preview after successful submit
       });
       setSelectedFile(null);
       setGalleryFiles([]);
@@ -269,21 +287,58 @@ const AddCelebraty = () => {
 
                     <Col md="6">
                       <div className="mb-3">
-                        <Label className="form-label"> Profile Image</Label>
+                        <Label className="form-label">Profile Image</Label>
                         <Input
                           type="file"
                           name="image"
                           accept="image/*"
-                          onChange={handleFileChange}
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              setSelectedFile(file);
+                              // ✅ Show instant preview
+                              setFormData((prev) => ({
+                                ...prev,
+                                previewImage: URL.createObjectURL(file),
+                              }));
+                            }
+                          }}
                         />
-                        {formData.old_image && (
-                          <div className="mt-2">
+
+                        {/* ✅ Preview newly selected image */}
+                        {formData.previewImage && (
+                          <div className="mt-2 position-relative d-inline-block">
                             <img
-                              src={`${process.env.REACT_APP_API_BASE_URL}/celebraty/${formData.old_image}`}
-                              alt="Main"
+                              src={formData.previewImage}
+                              alt="Preview"
                               width="100"
                               className="rounded border"
                             />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedFile(null);
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  previewImage: "",
+                                }));
+                              }}
+                              style={{
+                                position: "absolute",
+                                top: "-8px",
+                                right: "-8px",
+                                background: "red",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "50%",
+                                width: "22px",
+                                height: "22px",
+                                cursor: "pointer",
+                              }}
+                              title="Remove Image"
+                            >
+                              ×
+                            </button>
                           </div>
                         )}
                       </div>

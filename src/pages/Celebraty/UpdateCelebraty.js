@@ -134,10 +134,29 @@ const UpdateCelebraty = () => {
       console.error("Error fetching social link options:", err);
     }
   };
-  const handleInput = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+ const handleInput = (e) => {
+  const { name, value } = e.target;
+
+  // Auto-generate slug when the user types the name
+  if (name === "name") {
+    const generatedSlug = value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-") // replace non-alphanumeric chars with hyphen
+      .replace(/^-+|-+$/g, ""); // remove leading/trailing hyphens
+
+    setFormData((prev) => ({
+      ...prev,
+      name: value,
+      slug: generatedSlug,
+    }));
+  } else {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+};
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -189,6 +208,7 @@ const UpdateCelebraty = () => {
       );
 
       if (selectedFile) formDataToSend.append("image", selectedFile);
+if (formData.removeOldImage) formDataToSend.append("removeOldImage", "true");
 
       // ✅ include old gallery (keep existing)
       formDataToSend.append("oldGallery", JSON.stringify(oldGallery));
@@ -268,16 +288,42 @@ const UpdateCelebraty = () => {
                         accept="image/*"
                         onChange={handleFileChange}
                       />
-                      {formData.old_image && (
-                        <div className="mt-2">
-                          <img
-                            src={`${process.env.REACT_APP_API_BASE_URL}/celebraty/${formData.old_image}`}
-                            alt="Main"
-                            width="100"
-                            className="rounded border"
-                          />
-                        </div>
-                      )}
+                     {formData.old_image && (
+  <div className="mt-2 position-relative d-inline-block">
+    <img
+      src={`${process.env.REACT_APP_API_BASE_URL}/celebraty/${formData.old_image}`}
+      alt="Main"
+      width="100"
+      className="rounded border"
+    />
+    <button
+      type="button"
+      onClick={() =>
+        setFormData((prev) => ({
+          ...prev,
+          old_image: "", // remove preview
+          removeOldImage: true, // mark as removed
+        }))
+      }
+      style={{
+        position: "absolute",
+        top: "-8px",
+        right: "-8px",
+        background: "red",
+        color: "white",
+        border: "none",
+        borderRadius: "50%",
+        width: "22px",
+        height: "22px",
+        cursor: "pointer",
+      }}
+      title="Remove Image"
+    >
+      ×
+    </button>
+  </div>
+)}
+
                     </Col>
 
                     {/* GALLERY */}

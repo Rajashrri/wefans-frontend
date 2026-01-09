@@ -79,12 +79,30 @@ const Updateprofessionalmaster = () => {
   }, [id]);
 
   // Input handler
-  const handleInput = (e) => {
+const handleInput = (e) => {
+  const { name, value } = e.target;
+
+  // Auto-generate slug when name changes
+  if (name === "name") {
+    const generatedSlug = value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-") // replace non-alphanumeric with hyphen
+      .replace(/^-+|-+$/g, ""); // remove leading/trailing hyphens
+
     setprofessionalmaster({
       ...professionalmaster,
-      [e.target.name]: e.target.value,
+      name: value,
+      slug: generatedSlug,
     });
-  };
+  } else {
+    setprofessionalmaster({
+      ...professionalmaster,
+      [name]: value,
+    });
+  }
+};
+
   // Handle file change
   const handleFileChange = (e) => {
     const { name, files } = e.target;

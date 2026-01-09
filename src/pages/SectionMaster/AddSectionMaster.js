@@ -40,9 +40,29 @@ const Addsectionmaster = () => {
   }
 
   const handleInput = (e) => {
-    const { name, value } = e.target;
-    setSectionMaster({ ...sectionmaster, [name]: value });
-  };
+  const { name, value } = e.target;
+
+  // Auto-generate slug when typing the name
+  if (name === "name") {
+    const generatedSlug = value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-") // Replace spaces & special chars with "-"
+      .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
+
+    setSectionMaster((prev) => ({
+      ...prev,
+      name: value,
+      slug: generatedSlug,
+    }));
+  } else {
+    setSectionMaster((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+};
+
 
   // ✅ Handle Checkbox Change
   const handleCheckboxChange = (e) => {

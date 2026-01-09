@@ -83,9 +83,30 @@ const Updatesectionmaster = () => {
   }, [id]);
 
   // Input handler
-  const handleInput = (e) => {
-    setSectionMaster({ ...sectionmaster, [e.target.name]: e.target.value });
-  };
+const handleInput = (e) => {
+  const { name, value } = e.target;
+
+  // Auto-generate slug when typing name
+  if (name === "name") {
+    const generatedSlug = value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-") // Replace spaces and special chars with hyphen
+      .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
+
+    setSectionMaster((prev) => ({
+      ...prev,
+      name: value,
+      slug: generatedSlug,
+    }));
+  } else {
+    setSectionMaster((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+};
+
   // ✅ Checkbox handler
   const handleCheckboxChange = (e) => {
     const { checked } = e.target;
