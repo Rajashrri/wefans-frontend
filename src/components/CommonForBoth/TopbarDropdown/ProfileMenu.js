@@ -42,10 +42,10 @@ const ProfileMenu = () => {
       )
         .then((response) => response.json())
         .then((data) => {
-          console.log("Admin Name:", data.msg.name); // ✅ Correct
-          setAdminName(data.msg.name);
+          console.log("Admin Name:", data.msg.username); // ✅ Correct
+          setAdminName(data.msg.username);
             setAdminName2(data.msg.profile_pic);
-          localStorage.setItem("adminname", data.msg.name);
+          localStorage.setItem("adminname", data.msg.username);
         })
         .catch((error) => {
           console.error("Error fetching admin name:", error);

@@ -1,13 +1,7 @@
 import React, { Component } from "react";
-
-// MetisMenu
 import MetisMenu from "metismenujs";
-// import { withRouter } from "react-router-dom";
 import { Link } from "react-router-dom";
-
-//i18n
-import { withTranslation } from 'react-i18next';
-
+import { withTranslation } from "react-i18next";
 import { connect } from "react-redux";
 import {
   changeLayout,
@@ -19,25 +13,23 @@ import {
 import withRouter from "../Common/withRouter";
 
 class SidebarContent extends Component {
-
   constructor(props) {
     super(props);
     this.state = {
       pathName: this.props.router.location.pathname,
-    
-        roleName: localStorage.getItem("role_name") || "",
-           privileges: {}, // store backend privileges here
+      roleName: localStorage.getItem("role_name") || "",
+      privileges: {}, // store backend privileges here
     };
-
   }
 
   componentDidMount() {
     this.initMenu();
-      const storedRoleName = localStorage.getItem("role_name") || "";
+    const storedRoleName = localStorage.getItem("role_name") || "";
     this.setState({ roleName: storedRoleName });
     this.getPrivileges(); // fetch privileges when sidebar loads
   }
- getPrivileges = async () => {
+
+  getPrivileges = async () => {
     try {
       const roleId = localStorage.getItem("role_id");
       const roleName = localStorage.getItem("role_name") || "";
@@ -60,11 +52,9 @@ class SidebarContent extends Component {
 
   UNSAFE_componentDidUpdate(prevProps) {
     if (prevProps !== this.props) {
-
-        if (this.props.type !== prevProps.type) {
-            this.initMenu();
-        }
-
+      if (this.props.type !== prevProps.type) {
+        this.initMenu();
+      }
     }
     if (this.props.router.location.pathname !== prevProps.router.location.pathname) {
       this.setState({ pathName: this.props.router.location.pathname }, () => {
@@ -78,11 +68,11 @@ class SidebarContent extends Component {
     new MetisMenu("#side-menu");
     const { pathName } = this.state;
 
+    let matchingMenuItem = null;
+    const ul = document.getElementById("side-menu");
+    const items = ul.getElementsByTagName("a");
 
-    var matchingMenuItem = null;
-    var ul = document.getElementById("side-menu");
-    var items = ul.getElementsByTagName("a");
-    for (var i = 0; i < items.length; ++i) {
+    for (let i = 0; i < items.length; ++i) {
       if (pathName === items[i].pathname) {
         matchingMenuItem = items[i];
         break;
@@ -108,7 +98,7 @@ class SidebarContent extends Component {
 
         if (parent3) {
           parent3.classList.add("mm-active"); // li
-          parent3.childNodes[0].classList.add("mm-active"); //a
+          parent3.childNodes[0].classList.add("mm-active"); // a
           const parent4 = parent3.parentElement;
           if (parent4) {
             parent4.classList.add("mm-active");
@@ -120,69 +110,140 @@ class SidebarContent extends Component {
     return false;
   };
 
+  // helper to check if user has at least one privilege for a module
+  hasAnyPrivilege = (module) => {
+    const { privileges } = this.state;
+    const isAdmin = this.state.roleName?.trim().toLowerCase() === "admin";
+
+    if (isAdmin) return true;
+    if (!privileges) return false;
+
+    return (
+      privileges[`${module}add`] === "1" ||
+      privileges[`${module}list`] === "1" ||
+      privileges[`${module}update`] === "1" ||
+      privileges[`${module}delete`] === "1" ||
+      privileges[`${module}view`] === "1"
+    );
+  };
+
   render() {
- 
-const { privileges, roleName } = this.state;
+    const { roleName } = this.state;
     const isAdmin = roleName && roleName.trim().toLowerCase() === "admin";
+
     return (
       <React.Fragment>
         <div id="sidebar-menu">
-
           <ul className="metismenu list-unstyled" id="side-menu">
             <li className="menu-title">{this.props.t('Menu')}</li>
 
+            {/* Dashboard - always visible */}
             <li>
               <Link to="/dashboard" className="waves-effect">
                 <i className="ri-dashboard-line"></i>
                 <span className="ms-1">{this.props.t('Dashboard')}</span>
               </Link>
             </li>
-           <li>
-              <Link to="/professional-list" className="waves-effect">
-                <i className="mdi mdi-account-key-outline"></i> 
-                <span className="ms-1">{this.props.t('Profession Master')}</span>
-              </Link>
-            </li>
-           
-            <li>
-              <Link to="/language-master" className="waves-effect">
-                <i className="mdi mdi-account-key-outline"></i> 
-                <span className="ms-1">{this.props.t('Language Master')}</span>
-              </Link>
-            </li>
+
+            {/* Profession Master */}
+            {this.hasAnyPrivilege("professionmaster") && (
               <li>
-              <Link to="/triviaTypes-master" className="waves-effect">
-                <i className="mdi mdi-account-key-outline"></i> 
-                <span className="ms-1">{this.props.t('Trivia Types')}</span>
-              </Link>
+                <Link to="/professional-list" className="waves-effect">
+                  <i className="mdi mdi-account-key-outline"></i>
+                  <span className="ms-1">{this.props.t('Profession Master')}</span>
+                </Link>
+              </li>
+            )}
 
-               <Link to="/sociallink-list" className="waves-effect">
-                <i className="mdi mdi-account-key-outline"></i> 
-                <span className="ms-1">{this.props.t('Social Links ')}</span>
-              </Link>
+            {/* Language Master */}
+            {this.hasAnyPrivilege("languagemaster") && (
+              <li>
+                <Link to="/language-master" className="waves-effect">
+                  <i className="mdi mdi-account-key-outline"></i>
+                  <span className="ms-1">{this.props.t('Language Master')}</span>
+                </Link>
+              </li>
+            )}
+
+            {/* Trivia Types */}
+            {this.hasAnyPrivilege("trivia") && (
+              <li>
+                <Link to="/triviaTypes-master" className="waves-effect">
+                  <i className="mdi mdi-account-key-outline"></i>
+                  <span className="ms-1">{this.props.t('Trivia Types')}</span>
+                </Link>
+              </li>
+            )}
+
+            {/* Social Links */}
+            {this.hasAnyPrivilege("sociallink") && (
+              <li>
+                <Link to="/sociallink-list" className="waves-effect">
+                  <i className="mdi mdi-account-key-outline"></i>
+                  <span className="ms-1">{this.props.t('Social Links')}</span>
+                </Link>
+              </li>
+            )}
+
+            {/* Genre Master */}
+            {this.hasAnyPrivilege("genremaster") && (
+              <li>
                 <Link to="/genremaster-list" className="waves-effect">
-                <i className="mdi mdi-account-key-outline"></i> 
-                <span className="ms-1">{this.props.t('Genre Master')}</span>
-              </Link>
-               <Link to="/celebrity-list" className="waves-effect">
-                <i className="mdi mdi-account-key-outline"></i> 
-                <span className="ms-1">{this.props.t('Celebrity ')}</span>
-              </Link>
-              
-               <Link to="/sectionmaster-list" className="waves-effect">
-                <i className="mdi mdi-account-key-outline"></i> 
-                <span className="ms-1">{this.props.t('Section Types Master ')}</span>
-              </Link>
-               <Link to="/sectiontemplate-list" className="waves-effect">
-                <i className="mdi mdi-account-key-outline"></i> 
-                <span className="ms-1">{this.props.t('Section Template')}</span>
-              </Link>
-            </li>
-           
-         
-       
+                  <i className="mdi mdi-account-key-outline"></i>
+                  <span className="ms-1">{this.props.t('Genre Master')}</span>
+                </Link>
+              </li>
+            )}
 
-       
+            {/* Celebrity */}
+            {this.hasAnyPrivilege("celebrity") && (
+              <li>
+                <Link to="/celebrity-list" className="waves-effect">
+                  <i className="mdi mdi-account-key-outline"></i>
+                  <span className="ms-1">{this.props.t('Celebrity')}</span>
+                </Link>
+              </li>
+            )}
+
+            {/* Section Types Master */}
+            {this.hasAnyPrivilege("sectionmaster") && (
+              <li>
+                <Link to="/sectionmaster-list" className="waves-effect">
+                  <i className="mdi mdi-account-key-outline"></i>
+                  <span className="ms-1">{this.props.t('Section Types Master')}</span>
+                </Link>
+              </li>
+            )}
+
+            {/* Section Template */}
+            {this.hasAnyPrivilege("sectiontemplate") && (
+              <li>
+                <Link to="/sectiontemplate-list" className="waves-effect">
+                  <i className="mdi mdi-account-key-outline"></i>
+                  <span className="ms-1">{this.props.t('Section Template')}</span>
+                </Link>
+              </li>
+            )}
+
+            {/* Role Master */}
+            {this.hasAnyPrivilege("rolemaster") && (
+              <li>
+                <Link to="/role-master" className="waves-effect">
+                  <i className="mdi mdi-account-key-outline"></i>
+                  <span className="ms-1">{this.props.t('Role Master')}</span>
+                </Link>
+              </li>
+            )}
+
+            {/* Users */}
+            {this.hasAnyPrivilege("emplist") && (
+              <li>
+                <Link to="/employee-list" className="waves-effect">
+                  <i className="mdi mdi-account-cash-outline"></i>
+                  <span className="ms-1">{this.props.t('Users')}</span>
+                </Link>
+              </li>
+            )}
 
           </ul>
         </div>

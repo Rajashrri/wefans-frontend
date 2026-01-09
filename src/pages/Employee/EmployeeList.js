@@ -9,6 +9,7 @@ import {
   Button,
   Input,
   Modal,
+  ModalHeader,
   ModalBody,
   ModalFooter,
 } from "reactstrap";
@@ -26,13 +27,7 @@ import Breadcrumbs from "../../components/Common/Breadcrumb";
 import { Link } from "react-router-dom";
 import deleteimg from "../../assets/images/delete.png";
 import { toast } from "react-toastify";
-import {
-  getprofessionalmasters,
-  deleteprofessionalmaster,
-  updateprofessionalmasterStatus,
-} from "../../api/professionalmasterApi";
 
-// 🔎 Global filter component
 function GlobalFilter({
   preGlobalFilteredRows,
   globalFilter,
@@ -65,15 +60,13 @@ function Filter() {
   return null;
 }
 
-// 🔎 Reusable TableContainer component
 const TableContainer = ({
   columns,
   data,
   customPageSize,
   className,
   isGlobalFilter,
-  privileges, // add this
-  isAdmin, // add this
+  setModalOpen,
 }) => {
   const {
     getTableProps,
@@ -134,6 +127,17 @@ const TableContainer = ({
             setGlobalFilter={setGlobalFilter}
           />
         )}
+        <Col md={6}>
+          <div className="d-flex justify-content-end">
+            <Link
+              color="primary"
+              to="/create-employee"
+              className="btn btn-primary"
+            >
+              Add
+            </Link>
+          </div>
+        </Col>
       </Row>
 
       <div className="table-responsive react-table">
@@ -231,11 +235,101 @@ TableContainer.propTypes = {
   setModalOpen: PropTypes.func.isRequired,
 };
 
-// ✅ Corrected Component Name (Uppercase)
-const ProfessionalMasterList = () => {
-  const [professionalmasterList, setProfessionalmasterList] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
+const EmployeeList = () => {
   const [modalOpen2, setModalOpen2] = useState(false);
+  const [employeelist, setEmployeelist] = useState([]);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalOpen1, setModalOpen1] = useState(false);
+  const [categoryMap, setCategoryMap] = useState({});
+
+  const handleStatusToggle = (id) => {
+    setEmployeelist((prevList) =>
+      prevList.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              status: item.status === "Active" ? "Inactive" : "Active",
+            }
+          : item
+      )
+    );
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/api/employee/getRoleOptionsTable`
+      );
+      const data = await response.json();
+
+      const categoryData = Array.isArray(data.msg)
+        ? data.msg.reduce((acc, item) => {
+            acc[item._id] = item.name; // Create a map of ID -> Name
+            return acc;
+          }, {})
+        : {};
+
+      setCategoryMap(categoryData);
+    } catch (error) {
+      console.error("Error fetching category names:", error);
+    }
+  };
+  //for datatable
+  const fetchData = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/api/employee/getdataemployee`,
+        {
+          method: "GET",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      setEmployeelist(result.msg); // ✅ set setEmployeelist, not setData
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast.error("Failed to load roles. Please try again later.");
+    }
+  };
+
+  //status
+
+  const handleChange = async (currentStatus, id) => {
+    const newStatus = currentStatus == 1 ? 0 : 1;
+
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/api/employee/update-statusemployee`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status: newStatus, id }),
+        }
+      );
+
+      const res_data = await response.json();
+
+      if (response.ok) {
+        toast.success("Employee Status updated Successfully");
+        fetchData(); // Refresh the list
+      } else {
+        toast.error(
+          res_data.extraDetails || res_data.message || "Something went wrong."
+        );
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error("Error updating status. Please try again!");
+    }
+  };
+
   const [deleteId, setDeleteId] = useState(null);
 
   // 👇 Open modal and set ID
@@ -249,102 +343,43 @@ const ProfessionalMasterList = () => {
     setModalOpen2(false);
     setDeleteId(null);
   };
-
-  const [privileges, setPrivileges] = useState({});
-  const [roleName, setRoleName] = useState(
-    localStorage.getItem("role_name") || ""
-  );
-  const isAdmin = roleName?.trim().toLowerCase() === "admin";
-
-  // ✅ Check Add permission
-  const canAdd = (module) => {
-    return isAdmin || privileges[`${module}add`] === "1";
-  };
-
-  // ✅ Fetch privileges
-  const getPrivileges = async () => {
-    try {
-      const roleId = localStorage.getItem("role_id");
-      const roleName = localStorage.getItem("role_name") || "";
-
-      const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/api/privileges/getprivileges/${roleId}`
-      );
-      const result = await response.json();
-
-      if (result.msg && result.msg.length > 0) {
-        setPrivileges(result.msg[0]);
-        setRoleName(roleName); // keep roleName from localStorage
-      }
-    } catch (error) {
-      console.error("Error fetching privileges:", error);
-      toast.error("Failed to load privileges.");
-    }
-  };
-
-  // Toggle status
-  const handleChange = async (currentStatus, id) => {
-    const newStatus = currentStatus == 1 ? 0 : 1;
-
-    try {
-      const res_data = await updateprofessionalmasterStatus(id, newStatus);
-
-      if (res_data.success === false) {
-        toast.error(res_data.msg || "Failed to update status");
-        return;
-      }
-
-      toast.success("Professional Master status updated successfully");
-      fetchData();
-    } catch (error) {
-      console.error("Error updating status:", error);
-      toast.error("Error updating status. Please try again!");
-    }
-  };
-
-  // Fetch data
-  const fetchData = async () => {
-    try {
-      const result = await getprofessionalmasters();
-      setProfessionalmasterList(result.msg || []);
-    } catch (error) {
-      console.error("Error fetching professional masters:", error);
-      toast.error("Failed to load professional master data.");
-    }
-  };
-
-  // Confirm delete
-  const handleYesNo = async () => {
+  // 👇 Confirm delete function
+  const handleyesno = async () => {
     if (!deleteId) {
       toast.error("No ID to delete.");
       return;
     }
-
     try {
-      const data = await deleteprofessionalmaster(deleteId);
-
-      if (data.success === false) {
-        toast.error(data.msg || "Failed to delete professional master");
-        return;
-      }
-
-      toast.success("Professional master deleted successfully");
-      setProfessionalmasterList((prevItems) =>
-        prevItems.filter((row) => row._id !== deleteId)
+      const response = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/api/employee/deleteemployee/${deleteId}`,
+        {
+          method: "DELETE",
+        }
       );
-      setModalOpen2(false);
-      setDeleteId(null);
+
+      const data = await response.json();
+
+      if (response.ok) {
+        fetchData(); // Reload data
+        setModalOpen2(false);
+        toast.success("Selected data Deleted Successfully");
+        setEmployeelist((prevItems) =>
+          prevItems.filter((row) => row._id !== deleteId)
+        );
+        setDeleteId(null);
+      } else {
+        toast.error(data.extraDetails || data.message);
+      }
     } catch (error) {
-      console.error("Error deleting professional master:", error);
+      console.error(error);
       toast.error("Something went wrong.");
     }
   };
 
   useEffect(() => {
     fetchData();
-    getPrivileges(); // load privileges first
+    fetchCategories();
   }, []);
-
   const columns = useMemo(
     () => [
       {
@@ -353,6 +388,12 @@ const ProfessionalMasterList = () => {
       },
       { Header: "Created Date", accessor: "createdAt" },
       { Header: "Name", accessor: "name" },
+      { Header: "Email", accessor: "email" },
+      {
+        Header: "Role",
+        accessor: "role_id", // this is the role ID
+        Cell: ({ row }) => categoryMap[row.original.role_id] || "N/A",
+      },
       {
         Header: "Status",
         accessor: "status",
@@ -383,95 +424,69 @@ const ProfessionalMasterList = () => {
         Header: "Option",
         Cell: ({ row }) => (
           <div className="d-flex gap-2">
-            {(isAdmin || privileges.professionmasterupdate === "1") && (
-              <Link
-                to={`/update-professional/${row.original._id}`}
-                className="btn btn-primary btn-sm"
-              >
-                Edit
-              </Link>
-            )}
-
-            {(isAdmin || privileges.professionmasterdelete === "1") && (
-              <Button
-                color="danger"
-                size="sm"
-                onClick={() => handleDelete(row.original._id)}
-              >
-                Delete
-              </Button>
-            )}
+            <Link
+              color="primary"
+              to={`/update-employee/${row.original._id}`}
+              className="btn btn-primary"
+            >
+              Edit
+            </Link>
+            <Button
+              color="danger"
+              size="sm"
+              onClick={() => handleDelete(row.original._id)}
+            >
+              Delete
+            </Button>
           </div>
         ),
       },
     ],
-    [professionalmasterList]
+    [employeelist, categoryMap]
   );
 
   const breadcrumbItems = [
     { title: "Dashboard", link: "/" },
-    { title: "Profession Master", link: "#" },
+    { title: "Employee", link: "#" },
   ];
-
   return (
     <Fragment>
       <div className="page-content">
         <Container fluid>
-          <Breadcrumbs
-            title="Profession Master"
-            breadcrumbItems={breadcrumbItems}
-          />
-          {/* Add button should show independently */}
-          {(isAdmin || privileges.professionmasteradd === "1") && (
-            <div className="d-flex justify-content-end mb-2">
-              <Link to="/add-professional" className="btn btn-primary">
-                Add
-              </Link>
-            </div>
-          )}
-          {isAdmin || privileges.professionmasterlist === "1" ? (
-            <Card>
-              <CardBody>
-                {Object.keys(privileges).length > 0 && (
-                  <TableContainer
-                    columns={columns}
-                    data={professionalmasterList}
-                    customPageSize={10}
-                    isGlobalFilter={true}
-                    setModalOpen={setModalOpen}
-                    privileges={privileges} // pass privileges
-                    isAdmin={isAdmin} // pass isAdmin
-                  />
-                )}
-              </CardBody>
-            </Card>
-          ) : (
-            <p className="text-center text-danger mt-4">
-              You do not have permission to view this list.
-            </p>
-          )}
+          <Breadcrumbs title="EMPLOYEE" breadcrumbItems={breadcrumbItems} />
+          <Card>
+            <CardBody>
+              <TableContainer
+                columns={columns}
+                data={employeelist}
+                customPageSize={10}
+                isGlobalFilter={true}
+                setModalOpen={setModalOpen}
+              />
+            </CardBody>
+          </Card>
         </Container>
-
-        {/* Modal for Delete Confirmation */}
-        <Modal isOpen={modalOpen2} toggle={() => setModalOpen2(false)}>
+        {/*  Modal for Delete Confirmation */}
+        <Modal isOpen={modalOpen2} toggle={() => setModalOpen1(!modalOpen2)}>
+          {/* <ModalHeader className="position-absolute right-0 top-0 w-100 z-1" toggle={() => setModalOpen2(!modalOpen2)}></ModalHeader> */}
           <ModalBody className="mt-3">
             <h4 className="p-3 text-center">
-              Do you really want to <br /> delete the record?
+              Do you really want to <br /> delete the file?
             </h4>
             <div className="d-flex justify-content-center">
               <img
                 src={deleteimg}
-                alt="Delete Icon"
+                alt="Privilege Icon"
                 width={"70%"}
                 className="mb-3 m-auto"
               />
             </div>
           </ModalBody>
           <ModalFooter>
-            <Button color="danger" onClick={handleYesNo}>
+            <Button color="danger" onClick={handleyesno}>
               Delete
             </Button>
-            <Button color="secondary" onClick={handleClose}>
+            <Button color="secondary" onClick={() => handleClose()}>
               Cancel
             </Button>
           </ModalFooter>
@@ -481,4 +496,4 @@ const ProfessionalMasterList = () => {
   );
 };
 
-export default ProfessionalMasterList;
+export default EmployeeList;

@@ -10,6 +10,7 @@ import AuthLockScreen from "../pages/Authentication/AuthLockScreen";
 import Otp from "../pages/Authentication/Otp";
 import ForgotOtp from "../pages/Authentication/ForgotOtp";
 import ResetPwd from "../pages/Authentication/ResetPwd";
+import Privileges from  "../pages/RoleMaster/Privileges";
 
 // Dashboard
 import Dashboard from "../pages/Dashboard/index";
@@ -154,6 +155,13 @@ import AddTestimonials from "../pages/Testimonials/AddTestimonials";
 import UpdateTestimonials from "../pages/Testimonials/UpdateTestimonials";
 
 import Profile from "../pages/profile/Profile";
+
+
+import RoleMasterList from "../pages/RoleMaster/RoleMasterList";
+import EmployeeList from "../pages/Employee/EmployeeList";
+import CreateEmploye from "../pages/Employee/CreateEmploye";
+import UpdateEmploye from "../pages/Employee/UpdateEmploye";
+
 const authProtectedRoutes = [
   // Tables
   { path: "/basic-tables", component: <BasicTables /> },
@@ -285,6 +293,14 @@ const authProtectedRoutes = [
 
   { path: "/genremaster-list", component: <GenreMasterList /> },
 
+  //Role Master
+  { path: "/role-master", component: <RoleMasterList /> },
+  { path: "/privileges/:id", component: <Privileges /> },
+
+  //employee-list
+  { path: "/employee-list", component: <EmployeeList /> },
+  { path: "/create-employee", component: <CreateEmploye /> },
+  { path: "/update-employee/:id", component: <UpdateEmploye /> },
 
    { path: "/sectionmaster-list", component: <SectionMasterList /> },
   { path: "/add-sectionmaster", component: <AddSectionMaster /> },

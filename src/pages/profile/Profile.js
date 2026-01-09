@@ -14,7 +14,7 @@ import { toast } from "react-toastify";
 
 const Profile = () => {
   const [employee, setEmployee] = useState({
-    name: "",
+    username: "",
     email: "",
     role_name: "",
     emp_id: "",
@@ -49,12 +49,12 @@ const Profile = () => {
         if (response.ok) {
           const packageData = res_data.msg;
           setEmployee({
-            name: packageData.name || "",
+            username: packageData.username || "",
             email: packageData.email || "",
             role_name: packageData.role_name || "",
              phone: packageData.phone || "",
             emp_id: packageData.emp_id || "",
-            profile_pic: packageData.profile_pic || "", // ✅ THIS LINE ADDED
+            pic: packageData.pic || "", // ✅ THIS LINE ADDED
           });
         } else {
           console.error("Employee not found");
@@ -82,7 +82,7 @@ const Profile = () => {
     e.preventDefault();
 
     const newErrors = {};
-    if (!employee.name) newErrors.name = "Name is required";
+    if (!employee.username) newErrors.username = "Name is required";
     if (!employee.email) newErrors.email = "Email is required";
     if (!employee.phone) newErrors.phone = "Phone is required";
 
@@ -96,13 +96,13 @@ const Profile = () => {
 
       formDataToSend.append("email", employee.email);
 
-      formDataToSend.append("name", employee.name);
+      formDataToSend.append("username", employee.username);
     formDataToSend.append("phone", employee.phone);
 
       
      
 if (selectedFile) {
-  formDataToSend.append("profile_pic", selectedFile); // ✅ same field name
+  formDataToSend.append("pic", selectedFile); // ✅ same field name
 }
       const response = await fetch(
         `${process.env.REACT_APP_API_BASE_URL}/api/profile/editprofile/${id}`,
@@ -218,14 +218,14 @@ if (selectedFile) {
                           Name
                         </Label>
                         <Input
-                          name="name"
+                          name="username"
                           placeholder="Name"
                           type="text"
-                          value={employee.name}
+                          value={employee.username}
                           onChange={handleinput}
                         />
-                        {errors.name && (
-                          <div className="text-danger">{errors.name}</div>
+                        {errors.username && (
+                          <div className="text-danger">{errors.username}</div>
                         )}
                       </div>
                     </Col>
@@ -271,7 +271,7 @@ if (selectedFile) {
                           <input
                             type="file"
                             className="form-control"
-                            name="profile_pic"
+                            name="pic"
                             onChange={handleFileChange}
                             id="customFile"
                           />
@@ -281,7 +281,7 @@ if (selectedFile) {
                       <div className="mb-3">
                         <div className="input-group">
                           <img
-                            src={`${process.env.REACT_APP_API_BASE_URL}/profile/${employee.profile_pic}`}
+                            src={`${process.env.REACT_APP_API_BASE_URL}/profile/${employee.pic}`}
                             alt="Profile"
                             style={{ width: "100px", height: "100px" }}
                           />
