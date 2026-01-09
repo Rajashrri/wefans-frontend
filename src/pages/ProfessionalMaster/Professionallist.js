@@ -432,7 +432,7 @@ const ProfessionalMasterList = () => {
           {isAdmin || privileges.professionmasterlist === "1" ? (
             <Card>
               <CardBody>
-                {Object.keys(privileges).length > 0 && (
+               
                   <TableContainer
                     columns={columns}
                     data={professionalmasterList}
@@ -442,7 +442,7 @@ const ProfessionalMasterList = () => {
                     privileges={privileges} // pass privileges
                     isAdmin={isAdmin} // pass isAdmin
                   />
-                )}
+               
               </CardBody>
             </Card>
           ) : (
