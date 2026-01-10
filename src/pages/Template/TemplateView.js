@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getSectionTemplateById } from "../../api/TemplateApi";
+import { getSectionTemplateById,saveTemplateData  } from "../../api/TemplateApi";
 import {
   Input,
   Button,
@@ -14,12 +14,12 @@ import {
 import { toast } from "react-toastify";
 
 const Template = () => {
-  const { id } = useParams();
+  const { id,celebId } = useParams();
   const [template, setTemplate] = useState(null);
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
   const [mediaPreviews, setMediaPreviews] = useState({});
-
+console.log("Celebrity ID:", celebId);
   useEffect(() => {
     const fetchTemplate = async () => {
       try {
@@ -56,25 +56,67 @@ const Template = () => {
     }
   };
 
-  const handleSubmit = () => {
-    const newErrors = {};
-    template.sections?.forEach((section) => {
-      section.fieldsConfig?.forEach((field) => {
-        if (field.isRequired === "true" && !formData[field._id]) {
-          newErrors[field._id] = `${field.title} is required`;
+const handleSubmit = async () => {
+  const newErrors = {};
+  const sectionData = {};
+
+  // ✅ Collect section-wise form data
+  template.sections?.forEach((section) => {
+    const fields = {};
+    section.fieldsConfig?.forEach((field) => {
+      if (field.isRequired === "true" && !formData[field._id]) {
+        newErrors[field._id] = `${field.title} is required`;
+      }
+      fields[field.title] = formData[field._id] || "";
+    });
+    sectionData[section.name.toLowerCase()] = fields;
+  });
+
+  // ✅ Validation
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    toast.error("Please fix the errors before submitting");
+    return;
+  }
+
+  try {
+    // ✅ Prepare FormData (handles text + files)
+    const formDataToSend = new FormData();
+    formDataToSend.append("celebId", celebId);
+    formDataToSend.append("templateId", id);
+
+    // Loop through section data and append
+    Object.entries(sectionData).forEach(([sectionName, fields]) => {
+      Object.entries(fields).forEach(([fieldName, value]) => {
+        if (value instanceof File) {
+          // media field (file)
+          formDataToSend.append(`${sectionName}.${fieldName}`, value);
+        } else if (Array.isArray(value)) {
+          // multiple select
+          value.forEach((v) =>
+            formDataToSend.append(`${sectionName}.${fieldName}[]`, v)
+          );
+        } else {
+          // text, date, url, single select
+          formDataToSend.append(`${sectionName}.${fieldName}`, value);
         }
       });
     });
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      toast.error("Please fix the errors before submitting");
-      return;
-    }
+    // ✅ Call your separate API function
+    const result = await saveTemplateData(formDataToSend);
 
-    console.log("Form Submitted:", formData);
-    toast.success("Form submitted successfully!");
-  };
+    if (result.success) {
+      toast.success("Data saved successfully!");
+      console.log("Saved data:", result);
+    } else {
+      toast.error(result.msg || "Failed to save data");
+    }
+  } catch (err) {
+    console.error("Error submitting template:", err);
+    toast.error("Error saving data");
+  }
+};
 
   if (!template) return <p>Loading template...</p>;
 

@@ -12,3 +12,11 @@ export const getSectionTemplateById = async (id) => {
   return response.json();
 };
 
+// ✅ Save Template Data
+export const saveTemplateData = async (formData) => {
+  const response = await fetch(`${BASE_URL}/api/template/save`, {
+    method: "POST",
+    body: formData, // FormData (with files)
+  });
+  return response.json();
+};

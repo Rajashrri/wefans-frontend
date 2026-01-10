@@ -298,8 +298,8 @@ const authProtectedRoutes = [
   { path: "/genremaster-list", component: <GenreMasterList /> },
 
 
-  { path: "/section-template-view/:id", component: <Template /> },
 
+{ path: "/section-template-view/:celebId/:id", component: <Template /> },
 
 
   //Role Master

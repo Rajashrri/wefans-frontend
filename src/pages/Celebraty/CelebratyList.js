@@ -460,12 +460,13 @@ const columns = useMemo(
       <div className="d-flex flex-wrap gap-2">
         {matchedTemplates.map((t) => (
           <Link
-            key={t._id}
-            to={`/section-template-view/${t._id}`}
-            className="btn btn-outline-primary btn-sm"
-          >
-            {t.title}
-          </Link>
+  key={t._id}
+  to={`/section-template-view/${row.original._id}/${t._id}`}
+  className="btn btn-outline-primary btn-sm"
+>
+  {t.title}
+</Link>
+
         ))}
       </div>
     );
@@ -475,34 +476,7 @@ const columns = useMemo(
 
 
 
-    // ✅ Show profession names
-    {
-      Header: "Professions",
-      accessor: "professions",
-      Cell: ({ row }) => {
-        let professionIds = row.original.professions;
-
-        if (typeof professionIds === "string") {
-          try {
-            professionIds = JSON.parse(professionIds);
-          } catch {
-            professionIds = [];
-          }
-        }
-
-        if (!Array.isArray(professionIds)) {
-          professionIds = [];
-        }
-
-        const matchedProfessions = allProfessions
-          .filter((prof) => professionIds.includes(prof._id))
-          .map((prof) => prof.name);
-
-        return matchedProfessions.length > 0
-          ? matchedProfessions.join(", ")
-          : "—";
-      },
-    },
+ 
 
     {
       Header: "Status",
