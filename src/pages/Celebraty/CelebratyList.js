@@ -32,8 +32,8 @@ import {
   deleteCelebraty,
   updateCelebratyStatus,
   getProfessions,
-  fetchSectionTemplate
-    
+  fetchSectionTemplate,
+  getSectionMasters,
 } from "../../api/celebratyApi";
 
 function GlobalFilter({
@@ -242,7 +242,8 @@ TableContainer.propTypes = {
 const CelebratyList = () => {
   const [modalOpen2, setModalOpen2] = useState(false);
   const [allProfessions, setAllProfessions] = useState([]); // ✅ Add this
-const [allSectionTemplates, setAllSectionTemplates] = useState([]);
+  const [allSectionTemplates, setAllSectionTemplates] = useState([]);
+  const [allSectionMasters, setAllSectionMasters] = useState([]);
 
   const [celebraty, setcelebraty] = useState([
     {
@@ -285,7 +286,21 @@ const [allSectionTemplates, setAllSectionTemplates] = useState([]);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalOpen1, setModalOpen1] = useState(false);
-
+  const fetchSectionMasters = async () => {
+    try {
+      const res = await getSectionMasters(); // 👈 You should have an API function for this
+      if (res.msg && Array.isArray(res.msg)) {
+        setAllSectionMasters(res.msg);
+      } else if (res.data && Array.isArray(res.data)) {
+        setAllSectionMasters(res.data);
+      } else {
+        console.warn("No section masters found in API response:", res);
+        setAllSectionMasters([]);
+      }
+    } catch (err) {
+      console.error("Error fetching section masters:", err);
+    }
+  };
   const handleStatusToggle = (id) => {
     setcelebraty((prevList) =>
       prevList.map((item) =>
@@ -299,22 +314,22 @@ const [allSectionTemplates, setAllSectionTemplates] = useState([]);
     );
   };
 
-const fetchProfessions = async () => {
-  try {
-    const data = await getProfessions();
-    // ✅ FIX: Extract actual list
-    if (data.msg && Array.isArray(data.msg)) {
-      setAllProfessions(data.msg);
-    } else if (Array.isArray(data)) {
-      setAllProfessions(data);
-    } else {
-      console.warn("No professions found in API response:", data);
-      setAllProfessions([]);
+  const fetchProfessions = async () => {
+    try {
+      const data = await getProfessions();
+      // ✅ FIX: Extract actual list
+      if (data.msg && Array.isArray(data.msg)) {
+        setAllProfessions(data.msg);
+      } else if (Array.isArray(data)) {
+        setAllProfessions(data);
+      } else {
+        console.warn("No professions found in API response:", data);
+        setAllProfessions([]);
+      }
+    } catch (err) {
+      console.error("Error fetching professions:", err);
     }
-  } catch (err) {
-    console.error("Error fetching professions:", err);
-  }
-};
+  };
 
   //for datatable
   const fetchData = async () => {
@@ -384,218 +399,217 @@ const fetchProfessions = async () => {
       toast.error("Something went wrong while deleting.");
     }
   };
-const fetchSectionTemplates = async () => {
-  try {
-    const res = await fetchSectionTemplate();
-    if (res.msg && Array.isArray(res.msg)) {
-      setAllSectionTemplates(res.msg);
-    } else if (res.data && Array.isArray(res.data)) {
-      setAllSectionTemplates(res.data);
-    } else {
-      console.warn("No section templates found in API response:", res);
-      setAllSectionTemplates([]);
+  const fetchSectionTemplates = async () => {
+    try {
+      const res = await fetchSectionTemplate();
+      if (res.msg && Array.isArray(res.msg)) {
+        setAllSectionTemplates(res.msg);
+      } else if (res.data && Array.isArray(res.data)) {
+        setAllSectionTemplates(res.data);
+      } else {
+        console.warn("No section templates found in API response:", res);
+        setAllSectionTemplates([]);
+      }
+    } catch (err) {
+      console.error("Error fetching section templates:", err);
     }
-  } catch (err) {
-    console.error("Error fetching section templates:", err);
-  }
-};
+  };
 
   useEffect(() => {
     fetchData();
     fetchProfessions();
     fetchSectionTemplates();
-      console.log("All Professions:", allProfessions);
-  console.log("All Section Templates:", allSectionTemplates);
+    fetchSectionMasters();
+    console.log("All Professions:", allProfessions);
+    console.log("All Section Templates:", allSectionTemplates);
   }, []);
 
-const columns = useMemo(
-  () => [
-    {
-      Header: "No.",
-      accessor: (_row, i) => i + 1,
-    },
-    { Header: "Created Date", accessor: "createdAt" },
-    { Header: "Celebraty Name", accessor: "name" },
-
-
-{
-  Header: "Section Templates",
-  Cell: ({ row }) => {
-    let professionIds = row.original.professions;
-
-    // Ensure proper array
-    if (typeof professionIds === "string") {
-      try {
-        professionIds = JSON.parse(professionIds);
-      } catch {
-        professionIds = [];
-      }
-    }
-    if (!Array.isArray(professionIds)) professionIds = [];
-
-    // 🔹 Find professions linked to celebrity
-    const matchedProfessions = allProfessions.filter((prof) =>
-      professionIds.includes(prof._id)
-    );
-
-    // 🔹 Find one that has section templates
-    const professionWithTemplates = matchedProfessions.find(
-      (prof) =>
-        Array.isArray(prof.sectiontemplate) &&
-        prof.sectiontemplate.length > 0
-    );
-
-    if (!professionWithTemplates) return "—";
-
-    const sectionTemplateIds = professionWithTemplates.sectiontemplate;
-
-    // 🔹 Match with templates
-    const matchedTemplates = allSectionTemplates.filter((t) =>
-      sectionTemplateIds.includes(t._id)
-    );
-
-    if (matchedTemplates.length === 0) return "—";
-
-    return (
-      <div className="d-flex flex-wrap gap-2">
-        {matchedTemplates.map((t) => (
-          <Link
-  key={t._id}
-  to={`/section-template-view/${row.original._id}/${t._id}`}
-  className="btn btn-outline-primary btn-sm"
->
-  {t.title}
-</Link>
-
-        ))}
-      </div>
-    );
-  },
-},
-
-
-
-
- 
-
-    {
-      Header: "Status",
-      accessor: "status",
-      Cell: ({ row }) => {
-        const isActive = row.original.status == 1;
-        return (
-          <div className="form-check form-switch">
-            <input
-              type="checkbox"
-              className="form-check-input"
-              id={`switch-${row.original._id}`}
-              checked={isActive}
-              onChange={() =>
-                handleChange(row.original.status, row.original._id)
-              }
-            />
-            <label
-              className="form-check-label"
-              htmlFor={`switch-${row.original._id}`}
-            >
-              {isActive ? "Active" : "Inactive"}
-            </label>
-          </div>
-        );
+  const columns = useMemo(
+    () => [
+      {
+        Header: "No.",
+        accessor: (_row, i) => i + 1,
       },
-    },
+      { Header: "Created Date", accessor: "createdAt" },
+      { Header: "Celebraty Name", accessor: "name" },
+      {
+        Header: "Section Templates",
+        Cell: ({ row }) => {
+          let professionIds = row.original.professions;
 
-    {
-      Header: "Option",
-      Cell: ({ row }) => {
-        const professionIds =
-          typeof row.original.professions === "string"
-            ? JSON.parse(row.original.professions || "[]")
-            : row.original.professions || [];
+          // ✅ Ensure array type
+          if (typeof professionIds === "string") {
+            try {
+              professionIds = JSON.parse(professionIds);
+            } catch {
+              professionIds = [];
+            }
+          }
+          if (!Array.isArray(professionIds)) professionIds = [];
 
-        const actorProfession = allProfessions.find(
-          (prof) => prof.name.toLowerCase() === "actor"
-        );
-        const politicianProfession = allProfessions.find(
-          (prof) => prof.name.toLowerCase() === "politician"
-        );
+          // ✅ Find professions linked to celebrity
+          const matchedProfessions = allProfessions.filter((prof) =>
+            professionIds.includes(prof._id)
+          );
 
-        const isActor =
-          actorProfession && professionIds.includes(actorProfession._id);
-        const isPolitician =
-          politicianProfession && professionIds.includes(politicianProfession._id);
+          // ✅ Get all templates from all matched professions
+          const allTemplateIds = matchedProfessions.flatMap(
+            (prof) => prof.sectiontemplate || []
+          );
 
-        return (
-          <div className="d-flex gap-2 flex-wrap">
-            <Link
-              to={`/update-celebrity/${row.original._id}`}
-              className="btn btn-primary btn-sm"
-            >
-              Edit
-            </Link>
+          const matchedTemplates = allSectionTemplates.filter((t) =>
+            allTemplateIds.includes(t._id)
+          );
 
-            <Button
-              color="danger"
-              size="sm"
-              onClick={() => handleDelete(row.original._id)}
-            >
-              Delete
-            </Button>
+          if (matchedTemplates.length === 0) return "—";
 
-            <Link
-              to={`/timeline-list/${row.original._id}`}
-              className="btn btn-dark btn-sm"
-            >
-              Timeline Entries
-            </Link>
+          // ✅ Collect all unique section IDs from all templates
+          const allSectionIds = [
+            ...new Set(matchedTemplates.flatMap((t) => t.sections || [])),
+          ];
 
-            <Link
-              to={`/triviaentries-list/${row.original._id}`}
-              className="btn btn-outline-dark btn-sm"
-            >
-              Trivia Entries
-            </Link>
+          // ✅ Map section IDs → section names
+          const matchedSections = allSectionMasters.filter((s) =>
+            allSectionIds.includes(s._id)
+          );
 
-            {isActor && (
-              <>
+          if (matchedSections.length === 0) return "—";
+
+          return (
+            <div className="d-flex flex-wrap gap-2">
+              {matchedSections.map((sec) => (
                 <Link
-                  to={`/list-movie/${row.original._id}`}
-                  className="btn btn-success btn-sm"
+                  key={sec._id}
+                  to={`/section-template-list/${row.original._id}/${sec._id}`} // ✅ Celebrity ID + Section ID
+                  className="btn btn-outline-primary btn-sm"
                 >
-                  Movie
+                  {sec.name}
                 </Link>
-                <Link
-                  to={`/list-series/${row.original._id}`}
-                  className="btn btn-warning btn-sm"
-                >
-                  TV/Web Series
-                </Link>
-              </>
-            )}
-
-            {isPolitician && (
-              <>
-                <Link
-                  to={`/list-election/${row.original._id}`}
-                  className="btn btn-info btn-sm"
-                >
-                  Election
-                </Link>
-                <Link
-                  to={`/list-positions/${row.original._id}`}
-                  className="btn btn-secondary btn-sm"
-                >
-                  Positions Held
-                </Link>
-              </>
-            )}
-          </div>
-        );
+              ))}
+            </div>
+          );
+        },
       },
-    },
-  ],
-  [celebraty, allProfessions,allSectionTemplates]
-);
+
+      {
+        Header: "Status",
+        accessor: "status",
+        Cell: ({ row }) => {
+          const isActive = row.original.status == 1;
+          return (
+            <div className="form-check form-switch">
+              <input
+                type="checkbox"
+                className="form-check-input"
+                id={`switch-${row.original._id}`}
+                checked={isActive}
+                onChange={() =>
+                  handleChange(row.original.status, row.original._id)
+                }
+              />
+              <label
+                className="form-check-label"
+                htmlFor={`switch-${row.original._id}`}
+              >
+                {isActive ? "Active" : "Inactive"}
+              </label>
+            </div>
+          );
+        },
+      },
+
+      {
+        Header: "Option",
+        Cell: ({ row }) => {
+          const professionIds =
+            typeof row.original.professions === "string"
+              ? JSON.parse(row.original.professions || "[]")
+              : row.original.professions || [];
+
+          const actorProfession = allProfessions.find(
+            (prof) => prof.name.toLowerCase() === "actor"
+          );
+          const politicianProfession = allProfessions.find(
+            (prof) => prof.name.toLowerCase() === "politician"
+          );
+
+          const isActor =
+            actorProfession && professionIds.includes(actorProfession._id);
+          const isPolitician =
+            politicianProfession &&
+            professionIds.includes(politicianProfession._id);
+
+          return (
+            <div className="d-flex gap-2 flex-wrap">
+              <Link
+                to={`/update-celebrity/${row.original._id}`}
+                className="btn btn-primary btn-sm"
+              >
+                Edit
+              </Link>
+
+              <Button
+                color="danger"
+                size="sm"
+                onClick={() => handleDelete(row.original._id)}
+              >
+                Delete
+              </Button>
+
+              <Link
+                to={`/timeline-list/${row.original._id}`}
+                className="btn btn-dark btn-sm"
+              >
+                Timeline Entries
+              </Link>
+
+              <Link
+                to={`/triviaentries-list/${row.original._id}`}
+                className="btn btn-outline-dark btn-sm"
+              >
+                Trivia Entries
+              </Link>
+
+              {isActor && (
+                <>
+                  <Link
+                    to={`/list-movie/${row.original._id}`}
+                    className="btn btn-success btn-sm"
+                  >
+                    Movie
+                  </Link>
+                  <Link
+                    to={`/list-series/${row.original._id}`}
+                    className="btn btn-warning btn-sm"
+                  >
+                    TV/Web Series
+                  </Link>
+                </>
+              )}
+
+              {isPolitician && (
+                <>
+                  <Link
+                    to={`/list-election/${row.original._id}`}
+                    className="btn btn-info btn-sm"
+                  >
+                    Election
+                  </Link>
+                  <Link
+                    to={`/list-positions/${row.original._id}`}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    Positions Held
+                  </Link>
+                </>
+              )}
+            </div>
+          );
+        },
+      },
+    ],
+    [celebraty, allProfessions, allSectionTemplates]
+  );
 
   const breadcrumbItems = [
     { title: "Dashboard", link: "/" },

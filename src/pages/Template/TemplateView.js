@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getSectionTemplateById,saveTemplateData  } from "../../api/TemplateApi";
+import { getSectionTemplateById, saveTemplateData } from "../../api/TemplateApi";
 import {
   Input,
   Button,
@@ -14,35 +14,33 @@ import {
 import { toast } from "react-toastify";
 
 const Template = () => {
-  const { id,celebId } = useParams();
-  const [template, setTemplate] = useState(null);
+  const { id, celebId } = useParams(); // id = Section Master ID
+  const [section, setSection] = useState(null);
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
   const [mediaPreviews, setMediaPreviews] = useState({});
-console.log("Celebrity ID:", celebId);
+
   useEffect(() => {
-    const fetchTemplate = async () => {
+    const fetchSection = async () => {
       try {
         const res = await getSectionTemplateById(id);
         const data = res.data;
 
-        setTemplate(data);
+        setSection(data);
 
-        // Initialize formData dynamically for all sections
+        // Initialize form fields dynamically
         const initialData = {};
-        data.sections?.forEach((section) => {
-          section.fieldsConfig?.forEach((field) => {
-            initialData[field._id] = field.type === "media" ? null : "";
-          });
+        data.fieldsConfig?.forEach((field) => {
+          initialData[field._id] = field.type === "media" ? null : "";
         });
         setFormData(initialData);
       } catch (err) {
         console.error(err);
-        toast.error("Failed to load template");
+        toast.error("Failed to load section master");
       }
     };
 
-    fetchTemplate();
+    fetchSection();
   }, [id]);
 
   const handleChange = (fieldId, value, type) => {
@@ -56,207 +54,196 @@ console.log("Celebrity ID:", celebId);
     }
   };
 
-const handleSubmit = async () => {
-  const newErrors = {};
-  const sectionData = {};
+  const handleSubmit = async () => {
+    const newErrors = {};
 
-  // ✅ Collect section-wise form data
-  template.sections?.forEach((section) => {
-    const fields = {};
+    // ✅ Validate required fields
     section.fieldsConfig?.forEach((field) => {
       if (field.isRequired === "true" && !formData[field._id]) {
         newErrors[field._id] = `${field.title} is required`;
       }
-      fields[field.title] = formData[field._id] || "";
     });
-    sectionData[section.name.toLowerCase()] = fields;
-  });
 
-  // ✅ Validation
-  if (Object.keys(newErrors).length > 0) {
-    setErrors(newErrors);
-    toast.error("Please fix the errors before submitting");
-    return;
-  }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast.error("Please fix the errors before submitting");
+      return;
+    }
 
-  try {
-    // ✅ Prepare FormData (handles text + files)
-    const formDataToSend = new FormData();
-    formDataToSend.append("celebId", celebId);
-    formDataToSend.append("templateId", id);
+    try {
+      // ✅ Prepare FormData
+      const formDataToSend = new FormData();
+      formDataToSend.append("celebId", celebId);
+      formDataToSend.append("templateId", id); // actually sectionId here
+      formDataToSend.append("sectionName", section.name.toLowerCase());
 
-    // Loop through section data and append
-    Object.entries(sectionData).forEach(([sectionName, fields]) => {
-      Object.entries(fields).forEach(([fieldName, value]) => {
+      section.fieldsConfig?.forEach((field) => {
+        const value = formData[field._id];
         if (value instanceof File) {
-          // media field (file)
-          formDataToSend.append(`${sectionName}.${fieldName}`, value);
+          formDataToSend.append(`${section.name}.${field.title}`, value);
         } else if (Array.isArray(value)) {
-          // multiple select
           value.forEach((v) =>
-            formDataToSend.append(`${sectionName}.${fieldName}[]`, v)
+            formDataToSend.append(`${section.name}.${field.title}[]`, v)
           );
         } else {
-          // text, date, url, single select
-          formDataToSend.append(`${sectionName}.${fieldName}`, value);
+          formDataToSend.append(`${section.name}.${field.title}`, value);
         }
       });
-    });
 
-    // ✅ Call your separate API function
-    const result = await saveTemplateData(formDataToSend);
+      const result = await saveTemplateData(formDataToSend);
 
-    if (result.success) {
-      toast.success("Data saved successfully!");
-      console.log("Saved data:", result);
-    } else {
-      toast.error(result.msg || "Failed to save data");
+      if (result.success) {
+        toast.success("Data saved successfully!");
+      } else {
+        toast.error(result.msg || "Failed to save data");
+      }
+    } catch (err) {
+      console.error("Error submitting form:", err);
+      toast.error("Error saving data");
     }
-  } catch (err) {
-    console.error("Error submitting template:", err);
-    toast.error("Error saving data");
-  }
-};
+  };
 
-  if (!template) return <p>Loading template...</p>;
+  if (!section) return <p>Loading section...</p>;
 
   return (
     <div className="page-content">
       <Container fluid>
         <Card>
           <CardBody>
-            <h4 className="mb-4">{template.title} Form</h4>
+            <h4 className="mb-4">
+              Section: {section.name} ({section.fieldsConfig?.length} fields)
+            </h4>
 
-            {template.sections?.map((section) => (
-              <div key={section._id} className="mb-4">
-                <h5>{section.name}</h5>
-                <Row>
-                  {section.fieldsConfig?.map((field) => (
-                    <Col md="6" key={field._id} className="mb-3">
-                      <Label>{field.title}</Label>
+            <Row>
+              {section.fieldsConfig?.map((field) => (
+                <Col md="6" key={field._id} className="mb-3">
+                  <Label>{field.title}</Label>
 
-                      {/* Short text */}
-                      {field.type === "text_short" && (
-                        <Input
-                          type="text"
-                          value={formData[field._id]}
-                          onChange={(e) =>
-                            handleChange(field._id, e.target.value)
-                          }
-                          placeholder={`Enter ${field.title}`}
-                        />
-                      )}
+                  {/* Short text */}
+                  {field.type === "text_short" && (
+                    <Input
+                      type="text"
+                      value={formData[field._id]}
+                      onChange={(e) =>
+                        handleChange(field._id, e.target.value)
+                      }
+                      placeholder={`Enter ${field.title}`}
+                    />
+                  )}
 
-                      {/* Textarea (legacy) */}
-                      {field.type === "text_long" && (
-                        <Input
-                          type="textarea"
-                          value={formData[field._id]}
-                          onChange={(e) =>
-                            handleChange(field._id, e.target.value)
-                          }
-                          placeholder={`Enter ${field.title}`}
-                        />
-                      )}
+                  {/* Long text */}
+                  {field.type === "text_long" && (
+                    <Input
+                      type="textarea"
+                      value={formData[field._id]}
+                      onChange={(e) =>
+                        handleChange(field._id, e.target.value)
+                      }
+                      placeholder={`Enter ${field.title}`}
+                    />
+                  )}
 
-                      {/* Date */}
-                      {field.type === "date" && (
-                        <Input
-                          type="date"
-                          value={formData[field._id]}
-                          onChange={(e) =>
-                            handleChange(field._id, e.target.value)
-                          }
-                        />
-                      )}
-                      {/* Date */}
+                  {/* Date */}
+                  {field.type === "date" && (
+                    <Input
+                      type="date"
+                      value={formData[field._id]}
+                      onChange={(e) =>
+                        handleChange(field._id, e.target.value)
+                      }
+                    />
+                  )}
 
-                      {field.type === "Single Select" && (
-                        <Input
-                          type="select"
-                          value={formData[field._id] || ""}
-                          onChange={(e) =>
-                            handleChange(field._id, e.target.value)
-                          }
-                        >
-                          <option value="">Select {field.title}</option>
-                          {field.options?.map((option) => (
-                            <option key={option._id} value={option._id}>
-                              {option.name || option.title || option.label}
-                            </option>
-                          ))}
-                        </Input>
-                      )}
-                      {/* ✅ Multi Select */}
-                      {field.type === "Multiple Select" && (
-                        <Input
-                          type="select"
-                          multiple
-                          value={formData[field._id] || []}
-                          onChange={(e) => {
-                            const selectedValues = Array.from(
-                              e.target.selectedOptions,
-                              (opt) => opt.value
-                            );
-                            handleChange(field._id, selectedValues);
+                  {/* URL */}
+                  {field.type === "url" && (
+                    <Input
+                      type="url"
+                      value={formData[field._id]}
+                      onChange={(e) =>
+                        handleChange(field._id, e.target.value)
+                      }
+                      placeholder={`Enter URL`}
+                    />
+                  )}
+
+                  {/* Single Select */}
+                  {field.type === "Single Select" && (
+                    <Input
+                      type="select"
+                      value={formData[field._id] || ""}
+                      onChange={(e) =>
+                        handleChange(field._id, e.target.value)
+                      }
+                    >
+                      <option value="">Select {field.title}</option>
+                      {field.options?.map((opt) => (
+                        <option key={opt._id} value={opt._id}>
+                          {opt.name || opt.title || opt.label}
+                        </option>
+                      ))}
+                    </Input>
+                  )}
+
+                  {/* Multiple Select */}
+                  {field.type === "Multiple Select" && (
+                    <Input
+                      type="select"
+                      multiple
+                      value={formData[field._id] || []}
+                      onChange={(e) => {
+                        const selectedValues = Array.from(
+                          e.target.selectedOptions,
+                          (opt) => opt.value
+                        );
+                        handleChange(field._id, selectedValues);
+                      }}
+                    >
+                      {field.options?.map((opt) => (
+                        <option key={opt._id} value={opt._id}>
+                          {opt.name || opt.title || opt.label}
+                        </option>
+                      ))}
+                    </Input>
+                  )}
+
+                  {/* Media */}
+                  {field.type === "media" && (
+                    <>
+                      <Input
+                        type="file"
+                        onChange={(e) =>
+                          handleChange(
+                            field._id,
+                            e.target.files[0],
+                            "media"
+                          )
+                        }
+                      />
+                      {mediaPreviews[field._id] && (
+                        <img
+                          src={mediaPreviews[field._id]}
+                          alt="Preview"
+                          style={{
+                            marginTop: 8,
+                            width: 100,
+                            height: 100,
+                            objectFit: "cover",
+                            borderRadius: 8,
                           }}
-                        >
-                          {field.options?.map((option) => (
-                            <option key={option._id} value={option._id}>
-                              {option.name || option.title || option.label}
-                            </option>
-                          ))}
-                        </Input>
-                      )}
-                      {field.type === "url" && (
-                        <Input
-                          type="url"
-                          value={formData[field._id]}
-                          onChange={(e) =>
-                            handleChange(field._id, e.target.value)
-                          }
                         />
                       )}
-                      {/* Media / file */}
-                      {field.type === "media" && (
-                        <>
-                          <Input
-                            type="file"
-                            onChange={(e) =>
-                              handleChange(
-                                field._id,
-                                e.target.files[0],
-                                "media"
-                              )
-                            }
-                          />
-                          {mediaPreviews[field._id] && (
-                            <img
-                              src={mediaPreviews[field._id]}
-                              alt="Preview"
-                              style={{
-                                marginTop: 8,
-                                width: 100,
-                                height: 100,
-                                objectFit: "cover",
-                                borderRadius: 8,
-                              }}
-                            />
-                          )}
-                        </>
-                      )}
+                    </>
+                  )}
 
-                      {/* Validation errors */}
-                      {errors[field._id] && (
-                        <div className="text-danger mt-1">
-                          {errors[field._id]}
-                        </div>
-                      )}
-                    </Col>
-                  ))}
-                </Row>
-              </div>
-            ))}
+                  {/* Errors */}
+                  {errors[field._id] && (
+                    <div className="text-danger mt-1">
+                      {errors[field._id]}
+                    </div>
+                  )}
+                </Col>
+              ))}
+            </Row>
 
             <Button color="primary" onClick={handleSubmit}>
               Submit

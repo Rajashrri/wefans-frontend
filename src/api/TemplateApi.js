@@ -20,3 +20,10 @@ export const saveTemplateData = async (formData) => {
   });
   return response.json();
 };
+
+// ✅ Get celebrity by ID (for edit view)
+export const getSectionData  = async (celebId, id) => {
+const response = await fetch(`${BASE_URL}/api/template/data/${celebId}/${id}`);
+  if (!response.ok) throw new Error("Failed to fetch celebraty by ID");
+  return response.json();
+};

@@ -71,7 +71,11 @@ export const getCelebratyById = async (id) => {
   if (!response.ok) throw new Error("Failed to fetch celebraty by ID");
   return response.json();
 };
-
+export const getSectionMasters = async () => {
+  const response = await fetch(`${BASE_URL}/api/celebraty/getSectionMasters`);
+  if (!response.ok) throw new Error("Failed to fetch celebraties");
+  return response.json();
+};
 
 // ✅ Update celebrity
 export const updateCelebraty = async (id, formData) => {

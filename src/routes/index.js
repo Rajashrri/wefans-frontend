@@ -119,6 +119,7 @@ import TriviaTypesList from "../pages/TriviaTypes/TriviaTypesList";
 import SectionTemplateList from "../pages/SectionTemplate/SectionTemplateList";
 
 import Template from "../pages/Template/TemplateView";
+import TemplateList from "../pages/Template/TemplateList";
 
 
 
@@ -266,6 +267,8 @@ const authProtectedRoutes = [
   { path: "/update-celebrity/:id", component: <UpdateCelebraty /> },
   { path: "/sectiontemplate-list", component: <SectionTemplateList /> },
 
+
+
   { path: "/add-movie/:id", component: <AddSection /> },
   { path: "/list-movie/:id", component: <ListMoviev /> },
   { path: "/update-movie/:id", component: <UpdateMoviev /> },
@@ -301,6 +304,7 @@ const authProtectedRoutes = [
 
 { path: "/section-template-view/:celebId/:id", component: <Template /> },
 
+{ path: "/section-template-list/:celebId/:id", component: <TemplateList /> },
 
   //Role Master
   { path: "/role-master", component: <RoleMasterList /> },
