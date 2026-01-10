@@ -123,6 +123,42 @@ const Template = () => {
             />
           )}
  {/* Date */}
+
+ {field.type === "Single Select" && (
+  <Input
+    type="select"
+    value={formData[field._id] || ""}
+    onChange={(e) => handleChange(field._id, e.target.value)}
+  >
+    <option value="">Select {field.title}</option>
+    {field.options?.map((option) => (
+      <option key={option._id} value={option._id}>
+        {option.name || option.title || option.label}
+      </option>
+    ))}
+  </Input>
+)}
+  {/* ✅ Multi Select */}
+    {field.type === "Multiple Select" && (
+      <Input
+        type="select"
+        multiple
+        value={formData[field._id] || []}
+        onChange={(e) => {
+          const selectedValues = Array.from(
+            e.target.selectedOptions,
+            (opt) => opt.value
+          );
+          handleChange(field._id, selectedValues);
+        }}
+      >
+        {field.options?.map((option) => (
+          <option key={option._id} value={option._id}>
+            {option.name || option.title || option.label}
+          </option>
+        ))}
+      </Input>
+    )}
           {field.type === "url" && (
             <Input
               type="url"
