@@ -85,121 +85,136 @@ const Template = () => {
           <CardBody>
             <h4 className="mb-4">{template.title} Form</h4>
 
-         {template.sections?.map((section) => (
-  <div key={section._id} className="mb-4">
-    <h5>{section.name}</h5>
-    <Row>
-      {section.fieldsConfig?.map((field) => (
-        <Col md="6" key={field._id} className="mb-3">
-          <Label>{field.title}</Label>
+            {template.sections?.map((section) => (
+              <div key={section._id} className="mb-4">
+                <h5>{section.name}</h5>
+                <Row>
+                  {section.fieldsConfig?.map((field) => (
+                    <Col md="6" key={field._id} className="mb-3">
+                      <Label>{field.title}</Label>
 
-          {/* Short text */}
-          {field.type === "text_short" && (
-            <Input
-              type="text"
-              value={formData[field._id]}
-              onChange={(e) => handleChange(field._id, e.target.value)}
-              placeholder={`Enter ${field.title}`}
-            />
-          )}
+                      {/* Short text */}
+                      {field.type === "text_short" && (
+                        <Input
+                          type="text"
+                          value={formData[field._id]}
+                          onChange={(e) =>
+                            handleChange(field._id, e.target.value)
+                          }
+                          placeholder={`Enter ${field.title}`}
+                        />
+                      )}
 
-        
-          {/* Textarea (legacy) */}
-          {field.type === "text_long" && (
-            <Input
-              type="textarea"
-              value={formData[field._id]}
-              onChange={(e) => handleChange(field._id, e.target.value)}
-              placeholder={`Enter ${field.title}`}
-            />
-          )}
+                      {/* Textarea (legacy) */}
+                      {field.type === "text_long" && (
+                        <Input
+                          type="textarea"
+                          value={formData[field._id]}
+                          onChange={(e) =>
+                            handleChange(field._id, e.target.value)
+                          }
+                          placeholder={`Enter ${field.title}`}
+                        />
+                      )}
 
-          {/* Date */}
-          {field.type === "date" && (
-            <Input
-              type="date"
-              value={formData[field._id]}
-              onChange={(e) => handleChange(field._id, e.target.value)}
-            />
-          )}
- {/* Date */}
+                      {/* Date */}
+                      {field.type === "date" && (
+                        <Input
+                          type="date"
+                          value={formData[field._id]}
+                          onChange={(e) =>
+                            handleChange(field._id, e.target.value)
+                          }
+                        />
+                      )}
+                      {/* Date */}
 
- {field.type === "Single Select" && (
-  <Input
-    type="select"
-    value={formData[field._id] || ""}
-    onChange={(e) => handleChange(field._id, e.target.value)}
-  >
-    <option value="">Select {field.title}</option>
-    {field.options?.map((option) => (
-      <option key={option._id} value={option._id}>
-        {option.name || option.title || option.label}
-      </option>
-    ))}
-  </Input>
-)}
-  {/* ✅ Multi Select */}
-    {field.type === "Multiple Select" && (
-      <Input
-        type="select"
-        multiple
-        value={formData[field._id] || []}
-        onChange={(e) => {
-          const selectedValues = Array.from(
-            e.target.selectedOptions,
-            (opt) => opt.value
-          );
-          handleChange(field._id, selectedValues);
-        }}
-      >
-        {field.options?.map((option) => (
-          <option key={option._id} value={option._id}>
-            {option.name || option.title || option.label}
-          </option>
-        ))}
-      </Input>
-    )}
-          {field.type === "url" && (
-            <Input
-              type="url"
-              value={formData[field._id]}
-              onChange={(e) => handleChange(field._id, e.target.value)}
-            />
-          )}
-          {/* Media / file */}
-          {field.type === "media" && (
-            <>
-              <Input
-                type="file"
-                onChange={(e) =>
-                  handleChange(field._id, e.target.files[0], "media")
-                }
-              />
-              {mediaPreviews[field._id] && (
-                <img
-                  src={mediaPreviews[field._id]}
-                  alt="Preview"
-                  style={{
-                    marginTop: 8,
-                    width: 100,
-                    height: 100,
-                    objectFit: "cover",
-                    borderRadius: 8,
-                  }}
-                />
-              )}
-            </>
-          )}
+                      {field.type === "Single Select" && (
+                        <Input
+                          type="select"
+                          value={formData[field._id] || ""}
+                          onChange={(e) =>
+                            handleChange(field._id, e.target.value)
+                          }
+                        >
+                          <option value="">Select {field.title}</option>
+                          {field.options?.map((option) => (
+                            <option key={option._id} value={option._id}>
+                              {option.name || option.title || option.label}
+                            </option>
+                          ))}
+                        </Input>
+                      )}
+                      {/* ✅ Multi Select */}
+                      {field.type === "Multiple Select" && (
+                        <Input
+                          type="select"
+                          multiple
+                          value={formData[field._id] || []}
+                          onChange={(e) => {
+                            const selectedValues = Array.from(
+                              e.target.selectedOptions,
+                              (opt) => opt.value
+                            );
+                            handleChange(field._id, selectedValues);
+                          }}
+                        >
+                          {field.options?.map((option) => (
+                            <option key={option._id} value={option._id}>
+                              {option.name || option.title || option.label}
+                            </option>
+                          ))}
+                        </Input>
+                      )}
+                      {field.type === "url" && (
+                        <Input
+                          type="url"
+                          value={formData[field._id]}
+                          onChange={(e) =>
+                            handleChange(field._id, e.target.value)
+                          }
+                        />
+                      )}
+                      {/* Media / file */}
+                      {field.type === "media" && (
+                        <>
+                          <Input
+                            type="file"
+                            onChange={(e) =>
+                              handleChange(
+                                field._id,
+                                e.target.files[0],
+                                "media"
+                              )
+                            }
+                          />
+                          {mediaPreviews[field._id] && (
+                            <img
+                              src={mediaPreviews[field._id]}
+                              alt="Preview"
+                              style={{
+                                marginTop: 8,
+                                width: 100,
+                                height: 100,
+                                objectFit: "cover",
+                                borderRadius: 8,
+                              }}
+                            />
+                          )}
+                        </>
+                      )}
 
-          {/* Validation errors */}
-          {errors[field._id] && (
-            <div className="text-danger mt-1">{errors[field._id]}</div>
-          )}
-        </Col>
-      ))}
-    </Row>
-  </div>
-))}
+                      {/* Validation errors */}
+                      {errors[field._id] && (
+                        <div className="text-danger mt-1">
+                          {errors[field._id]}
+                        </div>
+                      )}
+                    </Col>
+                  ))}
+                </Row>
+              </div>
+            ))}
 
             <Button color="primary" onClick={handleSubmit}>
               Submit
