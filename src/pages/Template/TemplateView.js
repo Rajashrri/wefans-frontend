@@ -122,7 +122,14 @@ const Template = () => {
               onChange={(e) => handleChange(field._id, e.target.value)}
             />
           )}
-
+ {/* Date */}
+          {field.type === "url" && (
+            <Input
+              type="url"
+              value={formData[field._id]}
+              onChange={(e) => handleChange(field._id, e.target.value)}
+            />
+          )}
           {/* Media / file */}
           {field.type === "media" && (
             <>
