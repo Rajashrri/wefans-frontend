@@ -24,6 +24,8 @@ export const addSectionTemplate = async (category) => {
   return response.json();
 };
 
+
+
 export const updateSectionTemplate = async (id, category) => {
   const response = await fetch(`${BASE_URL}/api/sectiontemplate/updateSectionTemplate/${id}`, {
     method: "PATCH",

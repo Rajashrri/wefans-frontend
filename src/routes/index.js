@@ -118,6 +118,10 @@ import LanguageList from "../pages/LanguageMaster/LanguageList";
 import TriviaTypesList from "../pages/TriviaTypes/TriviaTypesList";
 import SectionTemplateList from "../pages/SectionTemplate/SectionTemplateList";
 
+import Template from "../pages/Template/TemplateView";
+
+
+
 import SocialLinkList from "../pages/SocialLink/SocialLinkList";
 import GenreMasterList from "../pages/GenreMaster/GenreMasterList";
 
@@ -292,6 +296,11 @@ const authProtectedRoutes = [
   { path: "/sociallink-list", component: <SocialLinkList /> },
 
   { path: "/genremaster-list", component: <GenreMasterList /> },
+
+
+  { path: "/section-template-view/:id", component: <Template /> },
+
+
 
   //Role Master
   { path: "/role-master", component: <RoleMasterList /> },

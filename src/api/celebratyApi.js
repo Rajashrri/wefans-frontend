@@ -37,6 +37,19 @@ export const getProfessions = async () => {
     return [];
   }
 };
+export const fetchSectionTemplate = async () => {
+  try {
+    const res = await fetch(`${BASE_URL}/api/celebraty/fetchSectionTemplate`);
+    if (!res.ok) {
+      throw new Error("Failed to fetch fetchSectionTemplate");
+    }
+    const data = await res.json();
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching fetchSectionTemplate:", error);
+    return [];
+  }
+};
 // ✅ Add new celebrity
 export const addCelebraty = async (formData) => {
   const response = await fetch(`${BASE_URL}/api/celebraty/addcelebraty`, {
@@ -52,13 +65,13 @@ export const getCelebraties = async () => {
   if (!response.ok) throw new Error("Failed to fetch celebraties");
   return response.json();
 };
-
 // ✅ Get celebrity by ID (for edit view)
 export const getCelebratyById = async (id) => {
-  const response = await fetch(`${BASE_URL}/api/celebraty/getcelebratyByid/${id}`);
+  const response = await fetch(`${BASE_URL}/api/celebraty/getCelebratyById/${id}`);
   if (!response.ok) throw new Error("Failed to fetch celebraty by ID");
   return response.json();
 };
+
 
 // ✅ Update celebrity
 export const updateCelebraty = async (id, formData) => {
