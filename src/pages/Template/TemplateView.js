@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getSectionTemplateById } from "../../api/TemplateApi";
-import { Input, Button, Label, Row, Col, Container, Card, CardBody } from "reactstrap";
+import {
+  Input,
+  Button,
+  Label,
+  Row,
+  Col,
+  Container,
+  Card,
+  CardBody,
+} from "reactstrap";
 import { toast } from "react-toastify";
 
 const Template = () => {
@@ -40,7 +49,10 @@ const Template = () => {
     setFormData((prev) => ({ ...prev, [fieldId]: value }));
 
     if (type === "media" && value) {
-      setMediaPreviews((prev) => ({ ...prev, [fieldId]: URL.createObjectURL(value) }));
+      setMediaPreviews((prev) => ({
+        ...prev,
+        [fieldId]: URL.createObjectURL(value),
+      }));
     }
   };
 
@@ -73,52 +85,78 @@ const Template = () => {
           <CardBody>
             <h4 className="mb-4">{template.title} Form</h4>
 
-            {template.sections?.map((section) => (
-              <div key={section._id} className="mb-4">
-                <h5>{section.name}</h5>
-                <Row>
-                  {section.fieldsConfig?.map((field) => (
-                    <Col md="6" key={field._id} className="mb-3">
-                      <Label>{field.title}</Label>
+         {template.sections?.map((section) => (
+  <div key={section._id} className="mb-4">
+    <h5>{section.name}</h5>
+    <Row>
+      {section.fieldsConfig?.map((field) => (
+        <Col md="6" key={field._id} className="mb-3">
+          <Label>{field.title}</Label>
 
-                      {field.type === "text_short" && (
-                        <Input
-                          type="text"
-                          value={formData[field._id]}
-                          onChange={(e) => handleChange(field._id, e.target.value)}
-                        />
-                      )}
+          {/* Short text */}
+          {field.type === "text_short" && (
+            <Input
+              type="text"
+              value={formData[field._id]}
+              onChange={(e) => handleChange(field._id, e.target.value)}
+              placeholder={`Enter ${field.title}`}
+            />
+          )}
 
-                      {field.type === "textarea" && (
-                        <Input
-                          type="textarea"
-                          value={formData[field._id]}
-                          onChange={(e) => handleChange(field._id, e.target.value)}
-                        />
-                      )}
+        
+          {/* Textarea (legacy) */}
+          {field.type === "text_long" && (
+            <Input
+              type="textarea"
+              value={formData[field._id]}
+              onChange={(e) => handleChange(field._id, e.target.value)}
+              placeholder={`Enter ${field.title}`}
+            />
+          )}
 
-                      {field.type === "media" && (
-                        <>
-                          <Input
-                            type="file"
-                            onChange={(e) => handleChange(field._id, e.target.files[0], "media")}
-                          />
-                          {mediaPreviews[field._id] && (
-                            <img
-                              src={mediaPreviews[field._id]}
-                              alt="Preview"
-                              style={{ marginTop: 8, width: 100, height: 100, objectFit: "cover", borderRadius: 8 }}
-                            />
-                          )}
-                        </>
-                      )}
+          {/* Date */}
+          {field.type === "date" && (
+            <Input
+              type="date"
+              value={formData[field._id]}
+              onChange={(e) => handleChange(field._id, e.target.value)}
+            />
+          )}
 
-                      {errors[field._id] && <div className="text-danger mt-1">{errors[field._id]}</div>}
-                    </Col>
-                  ))}
-                </Row>
-              </div>
-            ))}
+          {/* Media / file */}
+          {field.type === "media" && (
+            <>
+              <Input
+                type="file"
+                onChange={(e) =>
+                  handleChange(field._id, e.target.files[0], "media")
+                }
+              />
+              {mediaPreviews[field._id] && (
+                <img
+                  src={mediaPreviews[field._id]}
+                  alt="Preview"
+                  style={{
+                    marginTop: 8,
+                    width: 100,
+                    height: 100,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                  }}
+                />
+              )}
+            </>
+          )}
+
+          {/* Validation errors */}
+          {errors[field._id] && (
+            <div className="text-danger mt-1">{errors[field._id]}</div>
+          )}
+        </Col>
+      ))}
+    </Row>
+  </div>
+))}
 
             <Button color="primary" onClick={handleSubmit}>
               Submit
