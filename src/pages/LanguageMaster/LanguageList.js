@@ -24,10 +24,8 @@ import {
 } from "react-table";
 import PropTypes from "prop-types";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
-import prvi from "../../assets/images/privileges.png";
 import deleteimg from "../../assets/images/delete.png";
 import { toast } from "react-toastify";
-import { Link } from "react-router-dom";
 import {
   fetchLanguage,
   addLanguage,
@@ -36,11 +34,9 @@ import {
   getLanguageById,
   updateLanguageStatus,
 } from "../../api/LanguageApi";
-function GlobalFilter({
-  preGlobalFilteredRows,
-  globalFilter,
-  setGlobalFilter,
-}) {
+
+// ================= GLOBAL FILTER ==================
+function GlobalFilter({ preGlobalFilteredRows, globalFilter, setGlobalFilter }) {
   const count = preGlobalFilteredRows.length;
   const [value, setValue] = useState(globalFilter);
 
@@ -64,10 +60,12 @@ function GlobalFilter({
   );
 }
 
+// ================= FILTER PLACEHOLDER ==================
 function Filter() {
   return null;
 }
 
+// ================= TABLE CONTAINER ==================
 const TableContainer = ({
   columns,
   data,
@@ -75,8 +73,6 @@ const TableContainer = ({
   className,
   isGlobalFilter,
   setModalOpen,
-  privileges, // add this
-  isAdmin, // add this
 }) => {
   const {
     getTableProps,
@@ -171,6 +167,7 @@ const TableContainer = ({
         </Table>
       </div>
 
+      {/* Pagination */}
       <Row className="justify-content-md-end justify-content-center align-items-center mt-3">
         <Col className="col-md-auto">
           <div className="d-flex gap-1">
@@ -225,51 +222,24 @@ const TableContainer = ({
   );
 };
 
-TableContainer.propTypes = {
-  columns: PropTypes.array.isRequired,
-  data: PropTypes.array.isRequired,
-  customPageSize: PropTypes.number,
-  className: PropTypes.string,
-  isGlobalFilter: PropTypes.bool,
-  setModalOpen: PropTypes.func.isRequired,
-};
-
-const RoleMasterList = () => {
-  const [category, setcategory] = useState({
-    name: "",
-  });
-
-  const [rolelist, setcategorylist] = useState([]);
-
+// ================= MAIN COMPONENT ==================
+const LanguageMasterList = () => {
+  const [language, setLanguage] = useState({ name: "", code: "" });
+  const [categorylist, setcategorylist] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalOpen1, setModalOpen1] = useState(false);
-
-  const [modalOpen2, setModalOpen2] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
-
-  // 👇 Open modal and set ID
-  const handleDelete = (id) => {
-    setDeleteId(id);
-    setModalOpen2(true);
-  };
-
+  const [itemIdToEdit, setItemIdToEdit] = useState(null);
+  const [errors, setErrors] = useState({});
   const [privileges, setPrivileges] = useState({});
-  const [roleName, setRoleName] = useState(
-    localStorage.getItem("role_name") || ""
-  );
+  const [roleName, setRoleName] = useState(localStorage.getItem("role_name") || "");
+
   const isAdmin = roleName?.trim().toLowerCase() === "admin";
 
-  // ✅ Check Add permission
-  const canAdd = (module) => {
-    return isAdmin || privileges[`${module}add`] === "1";
-  };
-
-  // ✅ Fetch privileges
+  // ================= PRIVILEGE FETCH =================
   const getPrivileges = async () => {
     try {
       const roleId = localStorage.getItem("role_id");
       const roleName = localStorage.getItem("role_name") || "";
-
       const response = await fetch(
         `${process.env.REACT_APP_API_BASE_URL}/api/privileges/getprivileges/${roleId}`
       );
@@ -277,7 +247,7 @@ const RoleMasterList = () => {
 
       if (result.msg && result.msg.length > 0) {
         setPrivileges(result.msg[0]);
-        setRoleName(roleName); // keep roleName from localStorage
+        setRoleName(roleName);
       }
     } catch (error) {
       console.error("Error fetching privileges:", error);
@@ -285,21 +255,18 @@ const RoleMasterList = () => {
     }
   };
 
-  // 👇 Close modal and reset ID
-  const handleClose = () => {
-    setModalOpen2(false);
-    setDeleteId(null);
-  };
-  //for datatable
+  // ================= FETCH DATA =================
   const fetchData = async () => {
     try {
       const result = await fetchLanguage();
+      console.log("Language API result:", result);
       setcategorylist(result.msg);
     } catch (error) {
-      toast.error("Failed to load categories.");
+      toast.error("Failed to load languages.");
     }
   };
 
+  // ================= STATUS CHANGE =================
   const handleChange = async (currentStatus, id) => {
     const newStatus = currentStatus == 1 ? 0 : 1;
     try {
@@ -311,61 +278,76 @@ const RoleMasterList = () => {
     }
   };
 
-  const [itemIdToDelete, setItemIdToDelete] = useState(null);
-
-  //for edit
-  const handleedit = async (id) => {
+  // ================= EDIT =================
+  const handleEdit = async (id) => {
     try {
       const data = await getLanguageById(id);
-      setcategory({ name: data.msg[0].name, code: data.msg[0].code });
-      setItemIdToDelete(data.msg[0]._id);
+      setLanguage({ name: data.msg[0].name, code: data.msg[0].code });
+      setItemIdToEdit(data.msg[0]._id);
       setModalOpen(true);
     } catch (error) {
-      toast.error("Failed to load category data");
+      toast.error("Failed to load data");
     }
   };
 
-  // 👇 Confirm delete function
-  const handleyesno = async () => {
+  // ================= DELETE =================
+  const handleDelete = (id) => {
+    setDeleteId(id);
+  };
+
+  const confirmDelete = async () => {
     if (!deleteId) return toast.error("No ID to delete.");
     try {
-      const data = await deleteLanguage(deleteId);
+      await deleteLanguage(deleteId);
       toast.success("Deleted successfully");
-      setModalOpen2(false);
+      setDeleteId(null);
       fetchData();
     } catch (error) {
       toast.error("Delete failed");
     }
   };
 
-  const handleStatusToggle = (id) => {
-    setcategorylist((prevList) =>
-      prevList.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              status: item.status === "Active" ? "Inactive" : "Active",
-            }
-          : item
-      )
-    );
+  // ================= ADD / UPDATE =================
+  const handleAddSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!language.name) return setErrors({ name: "Name is required" });
+    if (!language.code) return setErrors({ code: "Code is required" });
+
+    try {
+      const adminid = localStorage.getItem("adminid");
+      const payload = { ...language, createdBy: adminid };
+      let res_data;
+
+      if (itemIdToEdit) {
+        res_data = await updateLanguage(itemIdToEdit, payload);
+        toast.success("Updated successfully");
+      } else {
+        res_data = await addLanguage(payload);
+        toast.success("Added successfully");
+      }
+
+      setLanguage({ name: "", code: "" });
+      setErrors({});
+      setItemIdToEdit(null);
+      setModalOpen(false);
+      fetchData();
+    } catch (error) {
+      toast.error("Something went wrong.");
+    }
   };
 
+  // ================= TABLE COLUMNS =================
   const columns = useMemo(
     () => [
-      {
-        Header: "No.",
-        accessor: (_row, i) => i + 1,
-      },
+      { Header: "No.", accessor: (_row, i) => i + 1 },
       { Header: "Created Date", accessor: "createdAt" },
       { Header: "Name", accessor: "name" },
-
       {
         Header: "Status",
         accessor: "status",
         Cell: ({ row }) => {
           const isActive = row.original.status == 1;
-
           return (
             <div className="form-check form-switch">
               <input
@@ -387,7 +369,6 @@ const RoleMasterList = () => {
           );
         },
       },
-
       {
         Header: "Option",
         Cell: ({ row }) => (
@@ -395,7 +376,7 @@ const RoleMasterList = () => {
             {(isAdmin || privileges.languagemasterupdate === "1") && (
               <Button
                 color="primary"
-                onClick={() => handleedit(row.original._id)}
+                onClick={() => handleEdit(row.original._id)}
                 size="sm"
               >
                 Edit
@@ -414,105 +395,18 @@ const RoleMasterList = () => {
         ),
       },
     ],
-    [rolelist]
+    [categorylist, privileges]
   );
+
+  useEffect(() => {
+    fetchData();
+    getPrivileges();
+  }, []);
 
   const breadcrumbItems = [
     { title: "Dashboard", link: "/" },
     { title: "Language Master", link: "#" },
   ];
-  const handleinput = (e) => {
-    let name = e.target.name;
-    let value = e.target.value;
-    setcategory({
-      ...category,
-      [name]: value,
-    });
-  };
-  const handleClose1 = () => {
-    setModalOpen(false);
-    setItemIdToDelete(null);
-    setcategory({
-      name: "",
-    });
-  };
-
-  // const [itemIdToDelete, setItemIdToDelete] = useState(null);
-  const [data, setData] = useState([]);
-
-  const [errors, setErrors] = useState({});
-
-  const handleaddsubmit = async (e) => {
-    e.preventDefault();
-
-    // 🔸 Basic validation
-    if (!category.name) {
-      setErrors({ name: "Name is required" });
-      return;
-    }
-    if (!category.code) {
-      setErrors({ code: "Code is required" });
-      return;
-    }
-    try {
-      const adminid = localStorage.getItem("adminid");
-      const payload = { ...category, createdBy: adminid };
-      let res_data;
-
-      if (itemIdToDelete) {
-        // 🔸 Update existing category
-        res_data = await updateLanguage(itemIdToDelete, payload);
-
-        if (
-          res_data.success === false &&
-          res_data.msg.includes("already exist")
-        ) {
-          setErrors({ name: res_data.msg });
-          toast.error(res_data.msg);
-          return;
-        }
-        if (res_data.success === false || res_data.error) {
-          toast.error(res_data.msg || "Update failed.");
-          return;
-        }
-
-        toast.success("Updated successfully");
-      } else {
-        // 🔸 Add new category
-        res_data = await addLanguage(payload);
-
-        if (
-          res_data.success === false &&
-          res_data.msg.includes("already exist")
-        ) {
-          setErrors({ name: res_data.msg });
-          toast.error(res_data.msg);
-          return;
-        }
-
-        if (!res_data.success && res_data.error) {
-          toast.error(res_data.msg || "Add failed.");
-          return;
-        }
-
-        toast.success("Added successfully");
-      }
-
-      // 🔸 On success
-      handleClose1();
-      setcategory({ name: "" });
-      setErrors({});
-      fetchData();
-    } catch (error) {
-      console.error("Add/Update Category Error:", error);
-      toast.error("Something went wrong.");
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-    getPrivileges(); // load privileges first
-  }, []);
 
   return (
     <Fragment>
@@ -522,6 +416,7 @@ const RoleMasterList = () => {
             title="Language Master"
             breadcrumbItems={breadcrumbItems}
           />
+
           {(isAdmin || privileges.languagemasteradd === "1") && (
             <div className="d-flex justify-content-end mb-2">
               <Button color="primary" onClick={() => setModalOpen(true)}>
@@ -530,18 +425,16 @@ const RoleMasterList = () => {
             </div>
           )}
 
-          {isAdmin || privileges.languagemasteradd === "1" ? (
+          {isAdmin || privileges.languagemasterlist === "1" ? (
             <Card>
               <CardBody>
-                {Object.keys(privileges).length > 0 && (
-                  <TableContainer
-                    columns={columns}
-                    data={rolelist}
-                    customPageSize={10}
-                    isGlobalFilter={true}
-                    setModalOpen={setModalOpen}
-                  />
-                )}
+                <TableContainer
+                  columns={columns}
+                  data={categorylist} // ✅ FIXED
+                  customPageSize={10}
+                  isGlobalFilter={true}
+                  setModalOpen={setModalOpen}
+                />
               </CardBody>
             </Card>
           ) : (
@@ -551,39 +444,40 @@ const RoleMasterList = () => {
           )}
         </Container>
 
+        {/* ADD / EDIT MODAL */}
         <Modal isOpen={modalOpen} toggle={() => setModalOpen(!modalOpen)}>
           <ModalHeader toggle={() => setModalOpen(!modalOpen)}>
-            {!itemIdToDelete ? "Add" : "Edit"} Language Master
+            {!itemIdToEdit ? "Add" : "Edit"} Language
           </ModalHeader>
-          <form onSubmit={handleaddsubmit}>
+          <form onSubmit={handleAddSubmit}>
             <ModalBody>
               <Input
                 type="text"
-                value={category.name || ""}
-                onChange={handleinput}
+                value={language.name || ""}
+                onChange={(e) =>
+                  setLanguage({ ...language, name: e.target.value })
+                }
                 name="name"
                 placeholder="Name"
                 className="mb-2"
               />
-              {errors.name && (
-                <span className="text-danger">{errors.name}</span>
-              )}
-              <br></br>
+              {errors.name && <span className="text-danger">{errors.name}</span>}
+              <br />
               <Input
                 type="text"
-                value={category.code || ""}
-                onChange={handleinput}
+                value={language.code || ""}
+                onChange={(e) =>
+                  setLanguage({ ...language, code: e.target.value })
+                }
                 name="code"
                 placeholder="Code"
                 className="mb-2"
               />
-              {errors.code && (
-                <span className="text-danger">{errors.code}</span>
-              )}
+              {errors.code && <span className="text-danger">{errors.code}</span>}
             </ModalBody>
             <ModalFooter>
               <Button color="primary" type="submit">
-                {!itemIdToDelete ? "Add" : "Update"}
+                {!itemIdToEdit ? "Add" : "Update"}
               </Button>
               <Button color="secondary" onClick={() => setModalOpen(false)}>
                 Cancel
@@ -592,43 +486,26 @@ const RoleMasterList = () => {
           </form>
         </Modal>
 
-        <Modal isOpen={modalOpen1} toggle={() => setModalOpen1(!modalOpen1)}>
-          <ModalHeader toggle={() => setModalOpen1(!modalOpen1)}>
-            Update Blog Category
-          </ModalHeader>
-          <ModalBody>
-            <Input type="text" placeholder="Name" className="mb-2" />
-          </ModalBody>
-          <ModalFooter>
-            <Button color="primary" onClick={() => setModalOpen1(false)}>
-              Update
-            </Button>
-            <Button color="secondary" onClick={() => setModalOpen1(false)}>
-              Cancel
-            </Button>
-          </ModalFooter>
-        </Modal>
-
-        {/*  Modal for Delete Confirmation */}
-        <Modal isOpen={modalOpen2} toggle={() => setModalOpen2(false)}>
+        {/* DELETE MODAL */}
+        <Modal isOpen={!!deleteId} toggle={() => setDeleteId(null)}>
           <ModalBody className="mt-3">
             <h4 className="p-3 text-center">
-              Do you really want to <br /> delete the file?
+              Do you really want to <br /> delete this record?
             </h4>
             <div className="d-flex justify-content-center">
               <img
                 src={deleteimg}
-                alt="Privilege Icon"
+                alt="Delete Icon"
                 width={"70%"}
                 className="mb-3 m-auto"
               />
             </div>
           </ModalBody>
           <ModalFooter>
-            <Button color="danger" onClick={handleyesno}>
+            <Button color="danger" onClick={confirmDelete}>
               Delete
             </Button>
-            <Button color="secondary" onClick={() => handleClose()}>
+            <Button color="secondary" onClick={() => setDeleteId(null)}>
               Cancel
             </Button>
           </ModalFooter>
@@ -638,4 +515,4 @@ const RoleMasterList = () => {
   );
 };
 
-export default RoleMasterList;
+export default LanguageMasterList;
