@@ -76,6 +76,24 @@ export const getSectionMasters = async () => {
   if (!response.ok) throw new Error("Failed to fetch celebraties");
   return response.json();
 };
+export const getCelebratySectionsByCeleb = async (celebratyId) => {
+  try {
+    if (!celebratyId) throw new Error("celebratyId is required");
+
+    const res = await fetch(`${BASE_URL}/api/celebraty/getCelebratySectionsByCeleb/${celebratyId}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch celebraty sections");
+
+    const data = await res.json();
+    return data.data || [];
+  } catch (error) {
+    console.error("Error fetching celebraty sections:", error);
+    return [];
+  }
+};
 
 // ✅ Update celebrity
 export const updateCelebraty = async (id, formData) => {

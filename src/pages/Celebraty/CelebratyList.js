@@ -34,6 +34,7 @@ import {
   getProfessions,
   fetchSectionTemplate,
   getSectionMasters,
+  getCelebratySectionsByCeleb
 } from "../../api/celebratyApi";
 
 function GlobalFilter({
@@ -414,12 +415,30 @@ const CelebratyList = () => {
       console.error("Error fetching section templates:", err);
     }
   };
+const [celebratySections, setCelebratySections] = useState([]);
+// ✅ Once celebraty state changes, fetch its sections
+useEffect(() => {
+  if (celebraty.length > 0) {
+    const fetchSectionsForAll = async () => {
+      try {
+        const allSections = await Promise.all(
+          celebraty.map(c => getCelebratySectionsByCeleb(c._id))
+        );
+        setCelebratySections(allSections.flat());
+      } catch (err) {
+        console.error("Error fetching celebraty sections:", err);
+      }
+    };
+    fetchSectionsForAll();
+  }
+}, [celebraty]);
 
   useEffect(() => {
     fetchData();
     fetchProfessions();
     fetchSectionTemplates();
     fetchSectionMasters();
+     
     console.log("All Professions:", allProfessions);
     console.log("All Section Templates:", allSectionTemplates);
   }, []);
@@ -432,64 +451,38 @@ const CelebratyList = () => {
       },
       { Header: "Created Date", accessor: "createdAt" },
       { Header: "Celebraty Name", accessor: "name" },
-      {
-        Header: "Section Templates",
-        Cell: ({ row }) => {
-          let professionIds = row.original.professions;
 
-          // ✅ Ensure array type
-          if (typeof professionIds === "string") {
-            try {
-              professionIds = JSON.parse(professionIds);
-            } catch {
-              professionIds = [];
-            }
-          }
-          if (!Array.isArray(professionIds)) professionIds = [];
+{
+  Header: "Celebrity Sections",
+  Cell: ({ row }) => {
+    const celebSections = celebratySections.filter(
+      (cs) => cs.celebratyId === row.original._id
+    );
 
-          // ✅ Find professions linked to celebrity
-          const matchedProfessions = allProfessions.filter((prof) =>
-            professionIds.includes(prof._id)
-          );
+    if (celebSections.length === 0) return "—";
 
-          // ✅ Get all templates from all matched professions
-          const allTemplateIds = matchedProfessions.flatMap(
-            (prof) => prof.sectiontemplate || []
-          );
+    // Deduplicate by sectiontemplate
+    const uniqueSections = Array.from(
+      new Map(
+        celebSections.map((cs) => [cs.sectiontemplate, cs])
+      ).values()
+    );
 
-          const matchedTemplates = allSectionTemplates.filter((t) =>
-            allTemplateIds.includes(t._id)
-          );
-
-          if (matchedTemplates.length === 0) return "—";
-
-          // ✅ Collect all unique section IDs from all templates
-          const allSectionIds = [
-            ...new Set(matchedTemplates.flatMap((t) => t.sections || [])),
-          ];
-
-          // ✅ Map section IDs → section names
-          const matchedSections = allSectionMasters.filter((s) =>
-            allSectionIds.includes(s._id)
-          );
-
-          if (matchedSections.length === 0) return "—";
-
-          return (
-            <div className="d-flex flex-wrap gap-2">
-              {matchedSections.map((sec) => (
-                <Link
-                  key={sec._id}
-                  to={`/section-template-list/${row.original._id}/${sec._id}`} // ✅ Celebrity ID + Section ID
-                  className="btn btn-outline-primary btn-sm"
-                >
-                  {sec.name}
-                </Link>
-              ))}
-            </div>
-          );
-        },
-      },
+    return (
+      <div className="d-flex flex-wrap gap-2">
+        {uniqueSections.map((cs) => (
+          <Link
+            key={cs._id}
+            to={`/section-template-list/${row.original._id}/${cs.sectionmaster}`}
+            className="btn btn-outline-primary btn-sm"
+          >
+            {cs.sectiontemplate}  {/* ✅ Only unique template names */}
+          </Link>
+        ))}
+      </div>
+    );
+  },
+},
 
       {
         Header: "Status",
@@ -608,7 +601,7 @@ const CelebratyList = () => {
         },
       },
     ],
-    [celebraty, allProfessions, allSectionTemplates]
+    [celebraty,celebratySections, allProfessions, allSectionTemplates]
   );
 
   const breadcrumbItems = [
