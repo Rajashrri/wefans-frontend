@@ -41,7 +41,18 @@ export const getTemplateDataById = async (celebId, sectionId, dataId) => {
     return { success: false, msg: "Failed to fetch template data" };
   }
 };
-
+export const deleteTemplateData = async (celebId, sectionName, dataId) => {
+  try {
+    const res = await fetch(
+      `${BASE_URL}/api/template/delete/${celebId}/${sectionName}/${dataId}`,
+      { method: "DELETE" }
+    );
+    return await res.json();
+  } catch (err) {
+    console.error("Delete template data error:", err);
+    return { success: false, msg: "Error deleting data" };
+  }
+};
 // ✅ Update Template Data (for Edit)
 export const updateTemplateData = async (formData) => {
   try {
