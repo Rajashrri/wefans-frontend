@@ -25,7 +25,7 @@ import { useDropzone } from "react-dropzone";
 const UpdateCelebraty = () => {
   const [breadcrumbItems] = useState([
     { title: "Dashboard", link: "#" },
-    { title: "Update Celebraty", link: "#" },
+    { title: "Update Celebrity", link: "#" },
   ]);
 
   const navigate = useNavigate();
@@ -53,6 +53,8 @@ const UpdateCelebraty = () => {
     professions: [],
     socialLinks: [],
     statusnew: "",
+    gender: "",
+    dob: "",
   });
 
   const [selectedFile, setSelectedFile] = useState(null);
@@ -72,6 +74,8 @@ const UpdateCelebraty = () => {
           slug: data.slug || "",
           shortinfo: data.shortinfo || "",
           statusnew: data.statusnew || "",
+          dob: data.dob || "",
+          gender: data.gender || "",
           professions: data.professions || [],
           languages: data.languages || [],
           biography: data.biography || "",
@@ -134,29 +138,29 @@ const UpdateCelebraty = () => {
       console.error("Error fetching social link options:", err);
     }
   };
- const handleInput = (e) => {
-  const { name, value } = e.target;
+  const handleInput = (e) => {
+    const { name, value } = e.target;
 
-  // Auto-generate slug when the user types the name
-  if (name === "name") {
-    const generatedSlug = value
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-") // replace non-alphanumeric chars with hyphen
-      .replace(/^-+|-+$/g, ""); // remove leading/trailing hyphens
+    // Auto-generate slug when the user types the name
+    if (name === "name") {
+      const generatedSlug = value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-") // replace non-alphanumeric chars with hyphen
+        .replace(/^-+|-+$/g, ""); // remove leading/trailing hyphens
 
-    setFormData((prev) => ({
-      ...prev,
-      name: value,
-      slug: generatedSlug,
-    }));
-  } else {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  }
-};
+      setFormData((prev) => ({
+        ...prev,
+        name: value,
+        slug: generatedSlug,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -197,6 +201,8 @@ const UpdateCelebraty = () => {
       formDataToSend.append("shortinfo", formData.shortinfo);
       formDataToSend.append("biography", formData.biography);
       formDataToSend.append("statusnew", formData.statusnew);
+      formDataToSend.append("gender", formData.gender);
+      formDataToSend.append("dob", formData.dob);
       formDataToSend.append(
         "professions",
         JSON.stringify(formData.professions)
@@ -208,7 +214,8 @@ const UpdateCelebraty = () => {
       );
 
       if (selectedFile) formDataToSend.append("image", selectedFile);
-if (formData.removeOldImage) formDataToSend.append("removeOldImage", "true");
+      if (formData.removeOldImage)
+        formDataToSend.append("removeOldImage", "true");
 
       // ✅ include old gallery (keep existing)
       formDataToSend.append("oldGallery", JSON.stringify(oldGallery));
@@ -228,11 +235,11 @@ if (formData.removeOldImage) formDataToSend.append("removeOldImage", "true");
         return;
       }
 
-      toast.success("Celebraty Updated Successfully");
+      toast.success("Celebrity Updated Successfully");
       navigate("/celebrity-list");
     } catch (err) {
-      console.error("Update Celebraty Error:", err);
-      toast.error("Something went wrong while updating Celebraty.");
+      console.error("Update Celebrity Error:", err);
+      toast.error("Something went wrong while updating Celebrity.");
     }
   };
 
@@ -240,7 +247,7 @@ if (formData.removeOldImage) formDataToSend.append("removeOldImage", "true");
     <div className="page-content">
       <Container fluid>
         <Breadcrumbs
-          title="UPDATE Celebraty"
+          title="UPDATE Celebrity"
           breadcrumbItems={breadcrumbItems}
         />
         <Row>
@@ -278,7 +285,30 @@ if (formData.removeOldImage) formDataToSend.append("removeOldImage", "true");
                         <span className="text-danger">{errors.slug}</span>
                       )}
                     </Col>
-
+                    <Col md="6">
+                      <Label>Gender</Label>
+                      <Input
+                        type="select"
+                        name="gender"
+                        onChange={handleInput}
+                        value={formData.gender}
+                      >
+                        <option value="">Select</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </Input>
+                    </Col>
+                    <Col md="6">
+                      <Label>DOB</Label>
+                      <Input
+                        name="dob"
+                        value={formData.dob}
+                        onChange={handleInput}
+                        placeholder="DOB"
+                        type="date"
+                      />
+                    </Col>
                     {/* PROFILE IMAGE */}
                     <Col md="6">
                       <Label>Profile Image</Label>
@@ -288,42 +318,41 @@ if (formData.removeOldImage) formDataToSend.append("removeOldImage", "true");
                         accept="image/*"
                         onChange={handleFileChange}
                       />
-                     {formData.old_image && (
-  <div className="mt-2 position-relative d-inline-block">
-    <img
-      src={`${process.env.REACT_APP_API_BASE_URL}/celebraty/${formData.old_image}`}
-      alt="Main"
-      width="100"
-      className="rounded border"
-    />
-    <button
-      type="button"
-      onClick={() =>
-        setFormData((prev) => ({
-          ...prev,
-          old_image: "", // remove preview
-          removeOldImage: true, // mark as removed
-        }))
-      }
-      style={{
-        position: "absolute",
-        top: "-8px",
-        right: "-8px",
-        background: "red",
-        color: "white",
-        border: "none",
-        borderRadius: "50%",
-        width: "22px",
-        height: "22px",
-        cursor: "pointer",
-      }}
-      title="Remove Image"
-    >
-      ×
-    </button>
-  </div>
-)}
-
+                      {formData.old_image && (
+                        <div className="mt-2 position-relative d-inline-block">
+                          <img
+                            src={`${process.env.REACT_APP_API_BASE_URL}/celebraty/${formData.old_image}`}
+                            alt="Main"
+                            width="100"
+                            className="rounded border"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                old_image: "", // remove preview
+                                removeOldImage: true, // mark as removed
+                              }))
+                            }
+                            style={{
+                              position: "absolute",
+                              top: "-8px",
+                              right: "-8px",
+                              background: "red",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "50%",
+                              width: "22px",
+                              height: "22px",
+                              cursor: "pointer",
+                            }}
+                            title="Remove Image"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
                     </Col>
 
                     {/* GALLERY */}
@@ -640,7 +669,7 @@ if (formData.removeOldImage) formDataToSend.append("removeOldImage", "true");
                   </Row>
 
                   <Button type="submit" color="primary" className="mt-3">
-                    Update Celebraty
+                    Update Celebrity
                   </Button>
                 </form>
               </CardBody>

@@ -48,6 +48,8 @@ const AddCelebraty = () => {
     shortinfo: "",
     biography: "",
     image: "",
+     gender: "",
+      dob: "",
     languages: [], // ✅ initialize as empty arrays
     professions: [], // ✅ initialize as empty arrays
     statusnew: "Draft", // ✅ Default value
@@ -193,6 +195,8 @@ const AddCelebraty = () => {
       formDataToSend.append("shortinfo", formData.shortinfo);
       formDataToSend.append("biography", formData.biography);
       formDataToSend.append("statusnew", formData.statusnew);
+       formDataToSend.append("gender", formData.gender);
+        formDataToSend.append("dob", formData.dob);
       formDataToSend.append(
         "socialLinks",
         JSON.stringify(formData.socialLinks)
@@ -230,6 +234,8 @@ const AddCelebraty = () => {
       // Reset form
       setFormData({
         name: "",
+         dob: "",
+          gender: "",
         slug: "",
         shortinfo: "",
         biography: "",
@@ -251,7 +257,7 @@ const AddCelebraty = () => {
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="ADD Celebraty" breadcrumbItems={breadcrumbItems} />
+        <Breadcrumbs title="ADD Celebrity" breadcrumbItems={breadcrumbItems} />
         <Row>
           <Col xl="12">
             <Card>
@@ -271,6 +277,7 @@ const AddCelebraty = () => {
                         <span className="text-danger">{errors.name}</span>
                       )}
                     </Col>
+                      
                     <Col md="6">
                       <Label>Slug</Label>
                       <Input
@@ -284,7 +291,33 @@ const AddCelebraty = () => {
                         <span className="text-danger">{errors.slug}</span>
                       )}
                     </Col>
+   <Col md="6">
+                      <Label>Gender</Label>
+                      <Input
+                        type="select"
+                        name="gender"
+                        onChange={handleInput}
+                        value={formData.gender}
+                      >
+                        <option value="">Select</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </Input>
+                     
+                    </Col>
 
+                     <Col md="6">
+                      <Label>DOB</Label>
+                      <Input
+                        name="dob"
+                        value={formData.dob}
+                        onChange={handleInput}
+                        placeholder="DOB"
+                        type="date"
+                      />
+                      
+                    </Col>
                     <Col md="6">
                       <div className="mb-3">
                         <Label className="form-label">Profile Image</Label>
@@ -626,7 +659,7 @@ const AddCelebraty = () => {
                   </Row>
 
                   <Button type="submit" color="primary" className="mt-3">
-                    Add Celebraty
+                    Add Celebrity
                   </Button>
                 </form>
               </CardBody>

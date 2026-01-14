@@ -450,7 +450,7 @@ const CelebratyList = () => {
         accessor: (_row, i) => i + 1,
       },
       { Header: "Created Date", accessor: "createdAt" },
-      { Header: "Celebraty Name", accessor: "name" },
+      { Header: "Celebrity Name", accessor: "name" },
 
       {
         Header: "Celebrity Sections",
@@ -611,14 +611,14 @@ const CelebratyList = () => {
 
   const breadcrumbItems = [
     { title: "Dashboard", link: "/" },
-    { title: "Celebraty", link: "#" },
+    { title: "Celebrity", link: "#" },
   ];
 
   return (
     <Fragment>
       <div className="page-content">
         <Container fluid>
-          <Breadcrumbs title="Celebraty" breadcrumbItems={breadcrumbItems} />
+          <Breadcrumbs title="Celebrity" breadcrumbItems={breadcrumbItems} />
           <Card>
             <CardBody>
               <TableContainer
