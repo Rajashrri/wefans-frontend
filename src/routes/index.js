@@ -109,6 +109,9 @@ import Timelinelist from "../pages/Timeline/Timelinelist";
 import AddTimeline from "../pages/Timeline/AddTimeline";
 import UpdateTimeline from "../pages/Timeline/UpdateTimeline";
 
+import CustomOptionlist from "../pages/CustomOption/CustomOptionlist";
+import AddCustomOption from "../pages/CustomOption/AddCustomOption";
+import UpdateCustomOption from "../pages/CustomOption/UpdateCustomOption";
 
 import SectionMasterList from "../pages/SectionMaster/SectionMasterList";
 import AddSectionMaster from "../pages/SectionMaster/AddSectionMaster";
@@ -121,6 +124,7 @@ import SectionTemplateList from "../pages/SectionTemplate/SectionTemplateList";
 import Template from "../pages/Template/TemplateView";
 import TemplateList from "../pages/Template/TemplateList";
 
+import TemplateEdit from "../pages/Template/TemplateEdit";
 
 
 import SocialLinkList from "../pages/SocialLink/SocialLinkList";
@@ -278,6 +282,9 @@ const authProtectedRoutes = [
   { path: "/add-timeline/:id", component: <AddTimeline /> },
   { path: "/update-timeline/:id", component: <UpdateTimeline /> },
 
+  { path: "/customoption-list/:id", component: <CustomOptionlist /> },
+  { path: "/add-customoption/:id", component: <AddCustomOption /> },
+  { path: "/update-customoption/:id", component: <UpdateCustomOption /> },
 
   { path: "/triviaentries-list/:id", component: <TriviaentriesList /> },
   { path: "/add-triviaentries/:id", component: <CreateTriviaentries /> },
@@ -305,6 +312,7 @@ const authProtectedRoutes = [
 { path: "/section-template-view/:celebId/:id", component: <Template /> },
 
 { path: "/section-template-list/:celebId/:id", component: <TemplateList /> },
+{ path: "/section-template-edit/:celebId/:sectionId/:dataId", component: <TemplateEdit /> },
 
   //Role Master
   { path: "/role-master", component: <RoleMasterList /> },

@@ -65,6 +65,7 @@ const SectionTemplateList = () => {
                   {fields.map((f) => (
                     <th key={f._id}>{f.title}</th>
                   ))}
+                   <th>Actions</th> {/* ✅ Add Actions column */}
                 </tr>
               </thead>
               <tbody>
@@ -92,6 +93,17 @@ const SectionTemplateList = () => {
 
                         return <td key={f._id}>{value}</td>;
                       })}
+
+                      
+          {/* ✅ Add Edit Button */}
+          <td>
+            <Link
+              to={`/section-template-edit/${celebId}/${id}/${row._id}`}
+              className="btn btn-sm btn-warning me-2"
+            >
+              Edit
+            </Link>
+          </td>
                     </tr>
                   ))
                 ) : (

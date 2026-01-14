@@ -34,7 +34,7 @@ import {
   getProfessions,
   fetchSectionTemplate,
   getSectionMasters,
-  getCelebratySectionsByCeleb
+  getCelebratySectionsByCeleb,
 } from "../../api/celebratyApi";
 
 function GlobalFilter({
@@ -415,30 +415,30 @@ const CelebratyList = () => {
       console.error("Error fetching section templates:", err);
     }
   };
-const [celebratySections, setCelebratySections] = useState([]);
-// ✅ Once celebraty state changes, fetch its sections
-useEffect(() => {
-  if (celebraty.length > 0) {
-    const fetchSectionsForAll = async () => {
-      try {
-        const allSections = await Promise.all(
-          celebraty.map(c => getCelebratySectionsByCeleb(c._id))
-        );
-        setCelebratySections(allSections.flat());
-      } catch (err) {
-        console.error("Error fetching celebraty sections:", err);
-      }
-    };
-    fetchSectionsForAll();
-  }
-}, [celebraty]);
+  const [celebratySections, setCelebratySections] = useState([]);
+  // ✅ Once celebraty state changes, fetch its sections
+  useEffect(() => {
+    if (celebraty.length > 0) {
+      const fetchSectionsForAll = async () => {
+        try {
+          const allSections = await Promise.all(
+            celebraty.map((c) => getCelebratySectionsByCeleb(c._id))
+          );
+          setCelebratySections(allSections.flat());
+        } catch (err) {
+          console.error("Error fetching celebraty sections:", err);
+        }
+      };
+      fetchSectionsForAll();
+    }
+  }, [celebraty]);
 
   useEffect(() => {
     fetchData();
     fetchProfessions();
     fetchSectionTemplates();
     fetchSectionMasters();
-     
+
     console.log("All Professions:", allProfessions);
     console.log("All Section Templates:", allSectionTemplates);
   }, []);
@@ -452,37 +452,37 @@ useEffect(() => {
       { Header: "Created Date", accessor: "createdAt" },
       { Header: "Celebraty Name", accessor: "name" },
 
-{
-  Header: "Celebrity Sections",
-  Cell: ({ row }) => {
-    const celebSections = celebratySections.filter(
-      (cs) => cs.celebratyId === row.original._id
-    );
+      {
+        Header: "Celebrity Sections",
+        Cell: ({ row }) => {
+          const celebSections = celebratySections.filter(
+            (cs) => cs.celebratyId === row.original._id
+          );
 
-    if (celebSections.length === 0) return "—";
+          if (celebSections.length === 0) return "—";
 
-    // Deduplicate by sectiontemplate
-    const uniqueSections = Array.from(
-      new Map(
-        celebSections.map((cs) => [cs.sectiontemplate, cs])
-      ).values()
-    );
+          // Deduplicate by sectiontemplate
+          const uniqueSections = Array.from(
+            new Map(
+              celebSections.map((cs) => [cs.sectiontemplate, cs])
+            ).values()
+          );
 
-    return (
-      <div className="d-flex flex-wrap gap-2">
-        {uniqueSections.map((cs) => (
-          <Link
-            key={cs._id}
-            to={`/section-template-list/${row.original._id}/${cs.sectionmaster}`}
-            className="btn btn-outline-primary btn-sm"
-          >
-            {cs.sectiontemplate}  {/* ✅ Only unique template names */}
-          </Link>
-        ))}
-      </div>
-    );
-  },
-},
+          return (
+            <div className="d-flex flex-wrap gap-2">
+              {uniqueSections.map((cs) => (
+                <Link
+                  key={cs._id}
+                  to={`/section-template-list/${row.original._id}/${cs.sectionmaster}`}
+                  className="btn btn-outline-primary btn-sm"
+                >
+                  {cs.sectiontemplate} {/* ✅ Only unique template names */}
+                </Link>
+              ))}
+            </div>
+          );
+        },
+      },
 
       {
         Header: "Status",
@@ -562,7 +562,12 @@ useEffect(() => {
               >
                 Trivia Entries
               </Link>
-
+              <Link
+                to={`/customoption-list/${row.original._id}`}
+                className="btn btn-dark btn-sm"
+              >
+                Custom Section
+              </Link>
               {isActor && (
                 <>
                   <Link
@@ -601,7 +606,7 @@ useEffect(() => {
         },
       },
     ],
-    [celebraty,celebratySections, allProfessions, allSectionTemplates]
+    [celebraty, celebratySections, allProfessions, allSectionTemplates]
   );
 
   const breadcrumbItems = [
