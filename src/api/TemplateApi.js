@@ -25,7 +25,7 @@ export const saveTemplateData = async (formData) => {
 export const getTemplateDataById = async (celebId, sectionId, dataId) => {
   try {
     const response = await fetch(
-      `${BASE_URL}/api/template/data/${celebId}/${sectionId}/${dataId}`,
+      `${BASE_URL}/api/template/dataget/${celebId}/${sectionId}/${dataId}`,
       {
         method: "GET",
         headers: {

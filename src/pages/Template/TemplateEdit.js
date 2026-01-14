@@ -36,16 +36,16 @@ useEffect(() => {
       console.log("Section Response:", sectionRes);
       console.log("Data Response:", dataRes);
 
-      // ✅ Correctly read API shape
       const sectionData = sectionRes.data;
       const existingData = dataRes.data || {};
 
       setSection(sectionData);
 
-      // ✅ Initialize form fields with existing data or blank
+      // ✅ Map field IDs to actual data values using field.title
       const initialData = {};
       sectionData.fieldsConfig?.forEach((field) => {
-        initialData[field._id] = existingData[field.title] || "";
+        const fieldTitle = field.title;
+        initialData[field._id] = existingData[fieldTitle] || "";
       });
 
       setFormData(initialData);
@@ -224,7 +224,7 @@ useEffect(() => {
                         />
                       ) : formData[field._id] ? (
                         <img
-                          src={formData[field._id]} // existing image URL
+                          src={`${process.env.REACT_APP_API_BASE_URL}${formData[field._id]}`}
                           alt="Current"
                           style={{ marginTop: 8, width: 100, height: 100, objectFit: "cover", borderRadius: 8 }}
                         />
