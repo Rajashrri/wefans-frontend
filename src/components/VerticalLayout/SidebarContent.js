@@ -155,96 +155,80 @@ class SidebarContent extends Component {
               </li>
             )}
 
-            {/* Language Master */}
-            {this.hasAnyPrivilege("languagemaster") && (
+           
               <li>
                 <Link to="/language-master" className="waves-effect">
                   <i className="mdi mdi-account-key-outline"></i>
                   <span className="ms-1">{this.props.t('Language Master')}</span>
                 </Link>
               </li>
-            )}
+           
 
             {/* Trivia Types */}
-            {this.hasAnyPrivilege("trivia") && (
+           
               <li>
                 <Link to="/triviaTypes-master" className="waves-effect">
                   <i className="mdi mdi-account-key-outline"></i>
                   <span className="ms-1">{this.props.t('Trivia Types')}</span>
                 </Link>
               </li>
-            )}
+       
 
-            {/* Social Links */}
-            {this.hasAnyPrivilege("sociallink") && (
+          
               <li>
                 <Link to="/sociallink-list" className="waves-effect">
                   <i className="mdi mdi-account-key-outline"></i>
                   <span className="ms-1">{this.props.t('Social Links')}</span>
                 </Link>
               </li>
-            )}
-
-            {/* Genre Master */}
-            {this.hasAnyPrivilege("genremaster") && (
+          
+          
               <li>
                 <Link to="/genremaster-list" className="waves-effect">
                   <i className="mdi mdi-account-key-outline"></i>
                   <span className="ms-1">{this.props.t('Genre Master')}</span>
                 </Link>
               </li>
-            )}
+           
 
-            {/* Celebrity */}
-            {this.hasAnyPrivilege("celebrity") && (
+           
               <li>
                 <Link to="/celebrity-list" className="waves-effect">
                   <i className="mdi mdi-account-key-outline"></i>
                   <span className="ms-1">{this.props.t('Celebrity')}</span>
                 </Link>
               </li>
-            )}
-
-            {/* Section Types Master */}
-            {this.hasAnyPrivilege("sectionmaster") && (
+            
               <li>
                 <Link to="/sectionmaster-list" className="waves-effect">
                   <i className="mdi mdi-account-key-outline"></i>
                   <span className="ms-1">{this.props.t('Section Types Master')}</span>
                 </Link>
               </li>
-            )}
-
-            {/* Section Template */}
-            {this.hasAnyPrivilege("sectiontemplate") && (
+          
+            
               <li>
                 <Link to="/sectiontemplate-list" className="waves-effect">
                   <i className="mdi mdi-account-key-outline"></i>
                   <span className="ms-1">{this.props.t('Section Template')}</span>
                 </Link>
               </li>
-            )}
-
-            {/* Role Master */}
-            {this.hasAnyPrivilege("rolemaster") && (
+           
+           
               <li>
                 <Link to="/role-master" className="waves-effect">
                   <i className="mdi mdi-account-key-outline"></i>
                   <span className="ms-1">{this.props.t('Role Master')}</span>
                 </Link>
               </li>
-            )}
-
-            {/* Users */}
-            {this.hasAnyPrivilege("emplist") && (
+           
               <li>
                 <Link to="/employee-list" className="waves-effect">
                   <i className="mdi mdi-account-cash-outline"></i>
                   <span className="ms-1">{this.props.t('Users')}</span>
                 </Link>
               </li>
-            )}
-
+          
           </ul>
         </div>
       </React.Fragment>
