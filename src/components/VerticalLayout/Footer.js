@@ -12,7 +12,7 @@ const Footer = () => {
                             </Col> */}
                         <Col sm={12}>
                             <div className="text-sm-end d-none d-sm-block">
-                              Copyright  © {new Date().getFullYear()} We Fans  . All Rights Reserved. Powered By: <a href="https://DiigiiHost.com" target="_blank" rel="noopener noreferrer">DiigiiHost</a>
+                              Copyright  © {new Date().getFullYear()} We Fanss  . All Rights Reserved. Powered By: <a href="https://DiigiiHost.com" target="_blank" rel="noopener noreferrer">DiigiiHost</a>
                                 </div>
                         </Col>
                     </Row>

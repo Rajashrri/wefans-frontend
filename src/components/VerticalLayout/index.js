@@ -70,7 +70,7 @@ componentDidMount() {
     currentage = currentage.replaceAll("-" , " ");
     
     document.title =
-      currentage + " | We Fans  ";
+      currentage + " | We Fanss  ";
       
     if (this.props.leftSideBarTheme) {
       this.props.changeSidebarTheme(this.props.leftSideBarTheme);

@@ -63,7 +63,7 @@ class Layout extends Component {
     currentage = currentage.replaceAll("-" , " ");
 
     document.title =
-      currentage + " | We Fans  ";
+      currentage + " | We Fanss  ";
       
     this.props.changeLayout('horizontal');
     if (this.props.topbarTheme) {
