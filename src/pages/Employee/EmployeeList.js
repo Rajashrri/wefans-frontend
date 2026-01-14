@@ -387,7 +387,7 @@ const EmployeeList = () => {
         accessor: (_row, i) => i + 1,
       },
       { Header: "Created Date", accessor: "createdAt" },
-      { Header: "Name", accessor: "name" },
+      { Header: "Name", accessor: "username" },
       { Header: "Email", accessor: "email" },
       {
         Header: "Role",
