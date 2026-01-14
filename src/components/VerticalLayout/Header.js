@@ -31,10 +31,10 @@ import MegaMenu from "./MegaMenu";
 import { toggleRightSidebar } from "../../store/actions";
 
 //Import logo Images
-import logosmdark from "../../assets/images/fevicon.webp";
-import logodark from "../../assets/images/diigii.webp";
-import logosmlight from "../../assets/images/fevicon.webp";
-import logolight from "../../assets/images/diigii.webp";
+import logosmdark from "../../assets/images/wefans.png";
+import logodark from "../../assets/images/wefans-white.png";
+import logosmlight from "../../assets/images/wefans.png";
+import logolight from "../../assets/images/wefans-white.png";
 
 //Import Social Profile Images
 import github from "../../assets/images/brands/github.png";
