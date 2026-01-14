@@ -8,7 +8,7 @@ import {
   changeLayoutWidth,
   changeSidebarTheme,
   changeSidebarType,
-  changePreloader
+  changePreloader,
 } from "../../store/actions";
 import withRouter from "../Common/withRouter";
 
@@ -42,7 +42,7 @@ class SidebarContent extends Component {
       if (result.msg && result.msg.length > 0) {
         this.setState({
           privileges: result.msg[0],
-          roleName // keep roleName from localStorage
+          roleName, // keep roleName from localStorage
         });
       }
     } catch (error) {
@@ -56,11 +56,13 @@ class SidebarContent extends Component {
         this.initMenu();
       }
     }
-    if (this.props.router.location.pathname !== prevProps.router.location.pathname) {
+    if (
+      this.props.router.location.pathname !== prevProps.router.location.pathname
+    ) {
       this.setState({ pathName: this.props.router.location.pathname }, () => {
         this.initMenu();
       });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }
 
@@ -83,7 +85,7 @@ class SidebarContent extends Component {
     }
   }
 
-  activateParentDropdown = item => {
+  activateParentDropdown = (item) => {
     item.classList.add("active");
     const parent = item.parentElement;
 
@@ -135,13 +137,13 @@ class SidebarContent extends Component {
       <React.Fragment>
         <div id="sidebar-menu">
           <ul className="metismenu list-unstyled" id="side-menu">
-            <li className="menu-title">{this.props.t('Menu')}</li>
+            <li className="menu-title">{this.props.t("Menu")}</li>
 
             {/* Dashboard - always visible */}
             <li>
               <Link to="/dashboard" className="waves-effect">
                 <i className="ri-dashboard-line"></i>
-                <span className="ms-1">{this.props.t('Dashboard')}</span>
+                <span className="ms-1">{this.props.t("Dashboard")}</span>
               </Link>
             </li>
 
@@ -150,85 +152,79 @@ class SidebarContent extends Component {
               <li>
                 <Link to="/professional-list" className="waves-effect">
                   <i className="mdi mdi-account-key-outline"></i>
-                  <span className="ms-1">{this.props.t('Profession Master')}</span>
+                  <span className="ms-1">
+                    {this.props.t("Profession Master")}
+                  </span>
                 </Link>
               </li>
             )}
 
-           
-              <li>
-                <Link to="/language-master" className="waves-effect">
-                  <i className="mdi mdi-account-key-outline"></i>
-                  <span className="ms-1">{this.props.t('Language Master')}</span>
-                </Link>
-              </li>
-           
+            <li>
+              <Link to="/language-master" className="waves-effect">
+                <i className="mdi mdi-account-key-outline"></i>
+                <span className="ms-1">{this.props.t("Language Master")}</span>
+              </Link>
+            </li>
 
             {/* Trivia Types */}
-           
-              <li>
-                <Link to="/triviaTypes-master" className="waves-effect">
-                  <i className="mdi mdi-account-key-outline"></i>
-                  <span className="ms-1">{this.props.t('Trivia Types')}</span>
-                </Link>
-              </li>
-       
 
-          
-              <li>
-                <Link to="/sociallink-list" className="waves-effect">
-                  <i className="mdi mdi-account-key-outline"></i>
-                  <span className="ms-1">{this.props.t('Social Links')}</span>
-                </Link>
-              </li>
-          
-          
-              <li>
-                <Link to="/genremaster-list" className="waves-effect">
-                  <i className="mdi mdi-account-key-outline"></i>
-                  <span className="ms-1">{this.props.t('Genre Master')}</span>
-                </Link>
-              </li>
-           
+            <li>
+              <Link to="/triviaTypes-master" className="waves-effect">
+                <i className="mdi mdi-account-key-outline"></i>
+                <span className="ms-1">{this.props.t("Trivia Types")}</span>
+              </Link>
+            </li>
 
-           
-              <li>
-                <Link to="/celebrity-list" className="waves-effect">
-                  <i className="mdi mdi-account-key-outline"></i>
-                  <span className="ms-1">{this.props.t('Celebrity')}</span>
-                </Link>
-              </li>
-            
-              <li>
-                <Link to="/sectionmaster-list" className="waves-effect">
-                  <i className="mdi mdi-account-key-outline"></i>
-                  <span className="ms-1">{this.props.t('Section Types Master')}</span>
-                </Link>
-              </li>
-          
-            
-              <li>
-                <Link to="/sectiontemplate-list" className="waves-effect">
-                  <i className="mdi mdi-account-key-outline"></i>
-                  <span className="ms-1">{this.props.t('Section Template')}</span>
-                </Link>
-              </li>
-           
-           
-              <li>
-                <Link to="/role-master" className="waves-effect">
-                  <i className="mdi mdi-account-key-outline"></i>
-                  <span className="ms-1">{this.props.t('Role Master')}</span>
-                </Link>
-              </li>
-           
-              <li>
-                <Link to="/employee-list" className="waves-effect">
-                  <i className="mdi mdi-account-cash-outline"></i>
-                  <span className="ms-1">{this.props.t('Users')}</span>
-                </Link>
-              </li>
-          
+            <li>
+              <Link to="/sociallink-list" className="waves-effect">
+                <i className="mdi mdi-account-key-outline"></i>
+                <span className="ms-1">{this.props.t("Social Links")}</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/genremaster-list" className="waves-effect">
+                <i className="mdi mdi-account-key-outline"></i>
+                <span className="ms-1">{this.props.t("Genre Master")}</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/sectionmaster-list" className="waves-effect">
+                <i className="mdi mdi-account-key-outline"></i>
+                <span className="ms-1">
+                  {this.props.t("Section Types Master")}
+                </span>
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/sectiontemplate-list" className="waves-effect">
+                <i className="mdi mdi-account-key-outline"></i>
+                <span className="ms-1">{this.props.t("Section Template")}</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/celebrity-list" className="waves-effect">
+                <i className="mdi mdi-account-key-outline"></i>
+                <span className="ms-1">{this.props.t("Celebrity")}</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/role-master" className="waves-effect">
+                <i className="mdi mdi-account-key-outline"></i>
+                <span className="ms-1">{this.props.t("Role Master")}</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/employee-list" className="waves-effect">
+                <i className="mdi mdi-account-cash-outline"></i>
+                <span className="ms-1">{this.props.t("Users")}</span>
+              </Link>
+            </li>
           </ul>
         </div>
       </React.Fragment>
@@ -236,14 +232,16 @@ class SidebarContent extends Component {
   }
 }
 
-const mapStatetoProps = state => {
+const mapStatetoProps = (state) => {
   return { ...state.Layout };
 };
 
-export default withRouter(connect(mapStatetoProps, {
-  changeLayout,
-  changeSidebarTheme,
-  changeSidebarType,
-  changeLayoutWidth,
-  changePreloader
-})(withTranslation()(SidebarContent)));
+export default withRouter(
+  connect(mapStatetoProps, {
+    changeLayout,
+    changeSidebarTheme,
+    changeSidebarType,
+    changeLayoutWidth,
+    changePreloader,
+  })(withTranslation()(SidebarContent))
+);
